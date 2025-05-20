@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Az ember tragédiája - Interaktív Jegyzet (4-10. szín)</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+crossorigin=""/>
+<style>
+body {
+font-family: Arial, sans-serif;
+line-height: 1.6;
+margin: 0;
+padding: 20px;
+background-color: #f4f4f4;
+color: #333;
+}
+.container {
+max-width: 900px;
+margin: auto;
+background: #fff;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+#menu {
+margin-bottom: 20px;
+padding-bottom: 10px;
+border-bottom: 1px solid #ddd;
+text-align: center;
+}
+#menu button {
+padding: 10px 15px;
+margin: 0 10px;
+cursor: pointer;
+background-color: #5cb85c; 
+color: white;
+border: none;
+border-radius: 5px;
+font-size: 16px;
+}
+#menu button:hover {
+background-color: #4cae4c;
+}
+.view {
+margin-top: 20px;
+}
+#mapView h2, #timelineView h2 {
+text-align: center;
+color: #337ab7; 
+}
+
+#timelineView ul li {
+display: block;
+width: 90%;
+max-width: 300px;
+margin: 10px auto;
+padding: 12px;
+background-color: #f0ad4e; 
+color: white;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+font-size: 1em;
+text-align: center;
+}
+#timelineView ul li:hover {
+background-color: #ec971f;
+}
+#timelineView ul {
+list-style-type: none;
+padding: 0;
+}
+#sceneDetailView {
+margin-top: 20px;
+padding: 15px;
+border: 1px solid #ddd;
+border-radius: 5px;
+background-color: #f9f9f9;
+}
+#sceneDetailView h3 {
+color: #d9534f; 
+margin-top: 0;
+}
+#sceneDetailView .back-button {
+padding: 8px 12px;
+background-color: #5bc0de; 
+color: white;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+margin-bottom: 15px;
+}
+#sceneDetailView .back-button:hover {
+background-color: #46b8da;
+}
+
+.scene-content-item h4 { color: #337ab7; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top:0;}
+.scene-content-item h5 { color: #555; margin-top: 15px; margin-bottom: 5px;}
+.scene-content-item p { margin-bottom: 10px; }
+.scene-content-item ul { margin-left: 20px; margin-bottom: 10px;}
+.scene-content-item strong { color: #d9534f; }
+.scene-content-item em { font-style: italic; color: #555; }
+
+    #interactiveMap {
+        height: 450px; 
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-bottom:20px;
+    }
+    .map-info-text {
+        font-style: italic;
+        color: #777;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+<header style="text-align:center; margin-bottom:20px;">
+<h1>Az ember tragédiája - Interaktív Jegyzet</h1>
+<p>Madách Imre művének 4-10. színe</p>
+</header>
+<div id="menu">
+        <button onclick="showView('mapView')">🗺️ Térkép Nézet</button>
+        <button onclick="showView('timelineView')">⏳ Idővonal Nézet</button>
+    </div>
+
+    <div id="mapView" class="view">
+        <h2>Térkép Nézet</h2>
+        <p class="map-info-text">Kattints egy jelölőre a térképen a helyszín részleteiért!</p>
+        <div id="interactiveMap"></div>
+    </div>
+
+    <div id="timelineView" class="view" style="display:none;">
+        <h2>Idővonal Nézet</h2>
+        <ul>
+            <li onclick="showSceneDetails('egyiptom')">📜 4. Szín: Egyiptom</li>
+            <li onclick="showSceneDetails('athen')">📜 5. Szín: Athén</li>
+            <li onclick="showSceneDetails('roma')">📜 6. Szín: Róma</li>
+            <li onclick="showSceneDetails('konstantinapoly')">📜 7. Szín: Konstantinápoly</li>
+            <li onclick="showSceneDetails('praga1')">📜 8. Szín: Prága I.</li>
+            <li onclick="showSceneDetails('parizs')">📜 9. Szín: Párizs</li>
+            <li onclick="showSceneDetails('praga2')">📜 10. Szín: Prága II.</li>
+        </ul>
+    </div>
+
+    <div id="sceneDetailView" style="display:none;">
+        <button class="back-button" onclick="goBack()">↩️ Vissza</button>
+        <h3 id="sceneTitleDetail"></h3>
+        <div id="sceneContentDetail"></div>
+    </div>
+
+    
+    <div id="sceneStore" style="display:none;">
+        <div id="content-egyiptom" class="scene-content-item">
+            <h4>4. Szín: Egyiptom (Tézis)</h4>
+            <p><strong>Kor és helyszín:</strong> Ókori Egyiptom.</p>
+            <h5>Szereplők:</h5>
+            <ul>
+                <li><strong>Ádám:</strong> Ifjú fáraóként jelenik meg, a hatalom csúcsán.</li>
+                <li><strong>Éva:</strong> Egy rabszolganő feleségeként tűnik fel.</li>
+                <li><strong>Lucifer:</strong> Ádám minisztere, látszólag támogatja a fáraó törekvéseit.</li>
+            </ul>
+            <h5>Központi eszme:</h5>
+            <p>Az egyéni dicsőség, a hatalom és a halhatatlanság vágya. Ádám piramist építtet rabszolgák millióival, hogy örökké fennmaradjon a neve. Úgy érzi, ő mindent ural, de közben magányos és boldogtalan.</p>
+            <h5>Cselekmény és konfliktus:</h5>
+            <ul>
+                <li>Egyiptomban rabszolgák sokasága építi a fáraó gúláját (piramisát), és sokan belehalnak a megfeszített munkába.</li>
+                <li>Egy haldokló rabszolga felesége, Éva, megátkozza a fáraót. A rabszolga utolsó szavai (<em>"Élettársam! hősi, magasztos lény..."</em>) rádöbbentik Ádámot a szenvedésre, amit hatalma okoz.</li>
+                <li>Ádám kiábrándul a dicsőségből, amely ennyi szenvedéssel jár. Éva szavai nyomán az egyenlőség és a közösség gondolata merül fel benne.</li>
+            </ul>
+            <h5>Ádám felismerése/vágya a szín végén:</h5>
+            <p>Az egyéni dicsőség helyett egy olyan társadalmat keres, ahol a nép szabadon dönthet sorsáról. Vágyik a <em>"milliók egy miatt"</em> elv helyett a <em>"mindenki egyenlő"</em> állapotra.</p>
+        </div>
+
+        <div id="content-athen" class="scene-content-item">
+            <h4>5. Szín: Athén (Antitézis)</h4>
+            <p><strong>Kor és helyszín:</strong> Az ókori Athén, a demokrácia színtere ("Démosz uralma").</p>
+            <h5>Szereplők:</h5>
+            <ul>
+                <li><strong>Ádám:</strong> Miltiádészként, a perzsák felett győzelmet arató hadvezérként jelenik meg.</li>
+                <li><strong>Éva:</strong> Luciaként, Miltiádész feleségeként, aki fiával, Kimónnal várja haza férjét.</li>
+                <li><strong>Lucifer:</strong> Harcosként, majd a nép hangulatát Ádám ellen fordító hírhozóként (demagógként) tevékenykedik.</li>
+            </ul>
+            <h5>Központi eszme:</h5>
+            <p>A szabadság, az egyenlőség, a demokrácia. Ádám felszabadította a népet, a polgárok jogokat gyakorolnak.</p>
+            <h5>Cselekmény és konfliktus:</h5>
+            <ul>
+                <li>Míg Miltiádész-Ádám a városért harcol és győzelmet arat, a demagógok (köztük Lucifer) fellázítják ellene a népet.</li>
+                <li>Madách negatív képet fest a népről: a tömeg könnyen befolyásolható, hálátlan és megvesztegethető (pl. Kriszposz, aki három gyermekére hivatkozva kér szavazatokat: <em>"Aki úgy szavaz, az engem ment meg."</em>).</li>
+                <li>A demagógok visszaélnek a szabadságjogokkal.</li>
+                <li>Miltiádész hazatérve szembesül a nép ítéletével: árulással vádolják és halálra ("néppadra") ítélik.</li>
+            </ul>
+            <h5>Ádám felismerése/vágya a szín végén:</h5>
+            <p>Csalódik a nép ingatagságában és a demokrácia torz megvalósulásában. Eldönti, hogy a közügyektől távol marad, és passzív szemlélő szerepre vált. Megfogalmazza a hedonista életfelfogást: <em>"Örülj, mulass, tagadd meg az erényt."</em></p>
+        </div>
+
+        <div id="content-roma" class="scene-content-item">
+            <h4>6. Szín: Róma (Szintézis felé, de újabb tézis csírája)</h4>
+            <p><strong>Kor és helyszín:</strong> A császárkori Róma hanyatló időszaka, a féktelen élvezetek és a kiüresedés színtere.</p>
+            <h5>Szereplők:</h5>
+            <ul>
+                <li><strong>Ádám:</strong> Sergiolusként, egy gazdag, előkelő római arisztokrataként jelenik meg.</li>
+                <li><strong>Éva:</strong> Júliaként, egy hasonlóan léha életet élő nőként.</li>
+                <li><strong>Lucifer:</strong> Milóként, Sergiolus mulatótársaként.</li>
+                <li><strong>Hippia:</strong> Lucifer társa, egy kurtizán.</li>
+            </ul>
+            <h5>Központi eszme:</h5>
+            <p>A hedonizmus, a gyönyörök hajszolása, az "élj a mának" (carpe diem) elve. Az előkelő rómaiak a közgyűlésektől távol, parttalan szórakozással töltik idejüket.</p>
+            <h5>Cselekmény és konfliktus:</h5>
+            <ul>
+                <li>Ádám és barátai féktelen orgiákban és mulatozásban vesznek részt, miközben a pestis pusztít a városban.</li>
+                <li>Hippia, a gyönyörök hajszolásának és az élet tagadásának szimbólumaként, megcsókol egy pestises halottat, és iszonyú fájdalmak között meghal.</li>
+                <li>Ádám és Éva is ezt az életet élik, bár néha visszagondolnak a paradicsomi állapotokra, jelezve elégedetlenségüket.</li>
+                <li>A szín végén megjelenik Péter apostol, aki a kereszténység új eszméjét hirdeti: a testvériséget, amelynek vezérelve a szeretet.</li>
+            </ul>
+            <h5>Ádám felismerése/vágya a szín végén:</h5>
+            <p>Kiábrándul az öncélú élvezetekből, felismeri azok ürességét és pusztító voltát. Az új eszme, a testvériség és a szeretet felkelti érdeklődését, és Ádámot a <em>"lovagi imádat"</em> (egy magasabb rendű eszme iránti lelkesedés) fogja el.</p>
+        </div>
+
+        <div id="content-konstantinapoly" class="scene-content-item">
+            <h4>7. Szín: Konstantinápoly (Bizánc)</h4>
+            <p><strong>Kor és helyszín:</strong> A korai kereszténység egyik központja, Bizánc (Konstantinápoly), a vallási viták és a dogmatizmus színtere.</p>
+            <h5>Szereplők:</h5>
+            <ul>
+                <li><strong>Ádám:</strong> Tankrédként, egy lelkes keresztes lovagként érkezik.</li>
+                <li><strong>Éva:</strong> Izóraként, egy apácaként jelenik meg, akit a kolostor falai választanak el Ádámtól.</li>
+                <li><strong>Lucifer:</strong> Ádám fegyverhordozójaként kíséri.</li>
+            </ul>
+            <h5>Központi eszme:</h5>
+            <p>A kereszténység eszméje, a testvériség és a szeretet – azonban annak eltorzult, intézményesült formája.</p>
+            <h5>Cselekmény és konfliktus:</h5>
+            <ul>
+                <li>Ádám azt tapasztalja, hogy a kereszténység eredeti, tiszta eszméit eltorzították. A vallásosság dogmatikussá, kicsinyessé és embertelenné vált.</li>
+                <li>Az egyház képviselői jelentéktelen teológiai vitákkal (pl. <em>"homousion"</em> vs. <em>"homoiusion"</em> – azaz, hogy a Fiú egylényegű-e az Atyával, vagy csak hasonló lényegű) vannak elfoglalva, miközben embereket üldöznek eretnekség vádjával.</li>
+                <li>Ádám és Éva nem találhat egymásra a vallási fanatizmus és a merev szabályok miatt.</li>
+            </ul>
+            <h5>Ádám felismerése/vágya a szín végén:</h5>
+            <p>Csalódik a kereszténység intézményesült, eltorzult formájában. Kiábrándul a nagy eszmékért vívott harcból, és úgy érzi, a tudomány kínálhat menedéket és értelmet.</p>
+        </div>
+
+        <div id="content-praga1" class="scene-content-item">
+            <h4>8. Szín: Prága I.</h4>
+            <p><strong>Kor és helyszín:</strong> A reneszánsz Prága, II. Rudolf császár udvara.</p>
+            <h5>Szereplők:</h5>
+            <ul>
+                <li><strong>Ádám:</strong> Johannes Kepler, a híres csillagász és matematikus.</li>
+                <li><strong>Éva:</strong> Borbálaként, Kepler feleségeként, aki azonban könnyelmű és kicsapongó életet él.</li>
+                <li><strong>Lucifer:</strong> Kepler famulusaként (segédjeként) van jelen.</li>
+            </ul>
+            <h5>Központi eszme:</h5>
+            <p>A tudomány, az ismeretszerzés, a világ megértésének vágya. Ádám a szemlélődés és a tudományos kutatás felé fordul.</p>
+            <h5>Cselekmény és konfliktus:</h5>
+            <ul>
+                <li>Kepler-Ádám anyagi gondokkal küzd, kutatásait nem tudja finanszírozni. Kénytelen a kor babonás elvárásainak megfelelni: horoszkópokat készít és jóslásból él, amit mélységesen megvet.</li>
+                <li>Felesége, Borbála (Éva) nem érti meg férje tudományos törekvéseit, könnyelmű, kicsapongó életet él, egy udvaronccal csalja férjét, és férje pénzét költi. Kepler felesége miatt is megaláztatásoknak van kitéve.</li>
+                <li>A tudós magányos, környezete nem érti meg, munkája nem kap elismerést.</li>
+            </ul>
+            <h5>Ádám felismerése/állapota a szín végén:</h5>
+            <p>Csalódik a tudós lét nehézségeiben, abban, hogy a tudomány sem hozza meg a várt boldogságot vagy társadalmi elismerést. A feleségében is mélységesen csalódnia kell. A valóságból egy újabb álomba menekül.</p>
+        </div>
+
+        <div id="content-parizs" class="scene-content-item">
+            <h4>9. Szín: Párizs ("Álom az álomban")</h4>
+            <p><strong>Kor és helyszín:</strong> A francia forradalom Párizsa. Ez a szín Kepler-Ádám álma.</p>
+            <h5>Szereplők:</h5>
+            <ul>
+                <li><strong>Ádám:</strong> Dantonként, a forradalom egyik vezéralakjaként jelenik meg.</li>
+                <li><strong>Éva:</strong> Két alakban is megjelenik:
+                    <ol>
+                        <li>Egy arisztokrata márkinőként a vérpadon, aki büszkén néz szembe a halállal.</li>
+                        <li>Egy közönséges, vérszomjas forradalmárnőként, aki a tömeggel együtt ujjong a kivégzéseken – ezt az Éva-alakot Ádám elutasítja.</li>
+                    </ol>
+                </li>
+                <li><strong>Lucifer:</strong> Hóhérként tevékenykedik a guillotine mellett.</li>
+            </ul>
+            <h5>Központi eszme:</h5>
+            <p><em>"Egyenlőség, testvériség, szabadság!"</em> – a francia forradalom jelszavai.</p>
+            <h5>Cselekmény és konfliktus:</h5>
+            <ul>
+                <li>Danton-Ádám lelkesen hirdeti a forradalmi eszméket, de hamarosan szembesülnie kell a forradalom árnyoldalaival: a terrorral, az erőszakkal és a tömeges kivégzésekkel.</li>
+                <li>A "szent" eszme nevében elkövetett kegyetlenségek kiábrándítják.</li>
+                <li>A tömeg itt is befolyásolhatónak, ingatagnak és vérszomjasnak mutatkozik.</li>
+                <li>Végül magát Dantont is a forradalom árulójának bélyegzik és kivégzik Robespierre és Saint-Just parancsára.</li>
+            </ul>
+            <h5>Ádám felismerése/állapota a szín végén:</h5>
+            <p>Ádám itt nem elsősorban az eszméből ábrándul ki (hiszen annak nemességét elismeri), hanem annak véres és kegyetlen megvalósulásából, valamint saját bukásából. A forradalom felfalja saját gyermekeit.</p>
+        </div>
+
+        <div id="content-praga2" class="scene-content-item">
+            <h4>10. Szín: Prága II.</h4>
+            <p><strong>Kor és helyszín:</strong> Ismét Prága, Kepler lakása. Ádám felébred a párizsi álomból.</p>
+            <h5>Szereplők:</h5>
+            <ul>
+                <li><strong>Ádám:</strong> Johannes Kepler.</li>
+                <li><strong>Éva:</strong> Borbála, Kepler felesége.</li>
+                <li><strong>Lucifer:</strong> Kepler famulusa.</li>
+                <li><strong>Tanítvány:</strong> Kepler egyik lelkes, fiatal tanítványa.</li>
+            </ul>
+            <h5>Központi eszme:</h5>
+            <p>A tudomány értelmének és a haladás lehetőségének újragondolása a forradalmi álom tapasztalatai után.</p>
+            <h5>Cselekmény és konfliktus:</h5>
+            <ul>
+                <li>Kepler-Ádám borzadva, de egyben a forradalmi eszmék nagyságától lenyűgözve gondol vissza párizsi álmára (<em>"Nagyot végeztem és merészet álmodám"</em>).</li>
+                <li>Megjelenik egy tanítványa, aki lelkesedik a tudományért és annak jövőjéért. Kepler azonban kiábrándultsággal, óvatossággal fogadja, mondván, a tudás veszélyes lehet, és a tömeg úgysem érti meg annak valódi jelentőségét.</li>
+                <li>Felesége, Borbála (Éva) is megjelenik, ő is kiábrándult könnyelmű életéből és szeretőiből, és visszavágyik férjéhez, a nyugodt otthonba.</li>
+            </ul>
+            <h5>Ádám felismerése/állapota a szín végén:</h5>
+            <p>Ádám a párizsi álom ellenére, vagy éppen annak hatására, bizakodóbban kezd tekinteni a jövőbe. Bár a tudomány önmagában és a forradalmi eszmék erőszakos megvalósulása is kiábrándította, mégis van benne remény a haladásra, egy újabb, talán tisztább forma keresésére. A szín végén újra a jövő felé tekint, Lucifer pedig újabb álomkorszakot ígér neki, ezúttal Londonba, a kapitalizmus és az ipari forradalom világába.</p>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+ crossorigin=""></script>
+<script>
+    let currentView = 'mapView';
+    let map;
+    let mapInitialized = false;
+
+    const sceneLocations = [
+        { key: 'egyiptom', name: 'Egyiptom (4. szín)', coords: [30.0444, 31.2357], zoom: 5 },
+        { key: 'athen', name: 'Athén (5. szín)', coords: [37.9838, 23.7275], zoom: 6 },
+        { key: 'roma', name: 'Róma (6. szín)', coords: [41.9028, 12.4964], zoom: 6 },
+        { key: 'konstantinapoly', name: 'Konstantinápoly (7. szín)', coords: [41.0082, 28.9784], zoom: 6 },
+        { key: 'praga1', name: 'Prága I. (8. szín)', coords: [50.0755, 14.4378], zoom: 6 },
+        { key: 'parizs', name: 'Párizs (9. szín)', coords: [48.8566, 2.3522], zoom: 6 },
+        { key: 'praga2', name: 'Prága II. (10. szín)', coords: [50.0755, 14.4378], zoom: 6 }
+    ];
+
+    function initializeMap() {
+        if (!mapInitialized) {
+
+            map = L.map('interactiveMap').setView([48.6, 19.5], 4);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+
+            sceneLocations.forEach(location => {
+                const marker = L.marker(location.coords).addTo(map);
+                marker.bindTooltip(location.name);
+                marker.on('click', () => {
+                    showSceneDetails(location.key);
+                });
+            });
+            mapInitialized = true;
+        }
+    }
+
+    function showView(viewId) {
+        document.getElementById('mapView').style.display = 'none';
+        document.getElementById('timelineView').style.display = 'none';
+        document.getElementById('sceneDetailView').style.display = 'none';
+        document.getElementById(viewId).style.display = 'block';
+        currentView = viewId;
+
+        if (viewId === 'mapView') {
+            initializeMap();
+
+            if (map) {
+                setTimeout(() => { map.invalidateSize() }, 100);
+            }
+        }
+    }
+
+    function showSceneDetails(sceneKey) {
+        const sceneContentHTML = document.getElementById('content-' + sceneKey).innerHTML;
+        const sceneTitleFromContent = document.getElementById('content-' + sceneKey).querySelector('h4').innerText;
+
+        document.getElementById('sceneTitleDetail').innerText = sceneTitleFromContent;
+        document.getElementById('sceneContentDetail').innerHTML = sceneContentHTML;
+
+        document.getElementById('mapView').style.display = 'none';
+        document.getElementById('timelineView').style.display = 'none';
+        document.getElementById('sceneDetailView').style.display = 'block';
+    }
+
+    function goBack() {
+        document.getElementById('sceneDetailView').style.display = 'none';
+        document.getElementById(currentView).style.display = 'block';
+
+        if (currentView === 'mapView' && map) {
+             setTimeout(() => { map.invalidateSize() }, 100);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        showView('mapView');
+    });
+</script>
+</body>
+</html>
