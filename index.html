@@ -3,533 +3,1147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Az ember tragédiája - Interaktív Jegyzet (Összes szín)</title>
-    <!-- Leaflet CSS -->
+    <title>Az ember tragédiája - Interaktív Tanulófelület</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
      crossorigin=""/>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-            color: #333;
+        :root {
+            --primary-bg: #f8f9fa;
+            --secondary-bg: #ffffff;
+            --text-color: #212529;
+            --header-color: #007bff;
+            --button-bg: #28a745;
+            --button-hover-bg: #218838;
+            --accent-color: #ffc107;
+            --accent-hover-color: #e0a800;
+            --detail-header-color: #dc3545;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0,0,0,0.1);
+            --flashcard-front-bg: #e9ecef;
+            --flashcard-front-text: #212529;
+            --flashcard-back-bg: #343a40;
+            --flashcard-back-text: #f8f9fa;
+            --highlight-strong: var(--detail-header-color);
+            --highlight-em: #6c757d;
+            --quote-color: #17a2b8;
+            --known-card-border: #28a745;
+            --unknown-card-border: #dc3545;
+            --quiz-option-bg: #f8f9fa;
+            --quiz-option-text: #212529;
+            --quiz-option-hover-bg: #e2e6ea;
+            --quiz-correct-bg: #d4edda;
+            --quiz-correct-text: #155724;
+            --quiz-incorrect-bg: #f8d7da;
+            --quiz-incorrect-text: #721c24;
+            --link-color: #007bff;
         }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+        body.dark-mode {
+            --primary-bg: #212529;
+            --secondary-bg: #343a40;
+            --text-color: #f8f9fa;
+            --header-color: #58a6ff;
+            --button-bg: #379237;
+            --button-hover-bg: #2a7a2a;
+            --accent-color: #ffca2c;
+            --accent-hover-color: #f5bb00;
+            --detail-header-color: #f07178;
+            --border-color: #495057;
+            --shadow-color: rgba(255,255,255,0.05);
+            --flashcard-front-bg: #495057;
+            --flashcard-front-text: #f8f9fa;
+            --flashcard-back-bg: #212529;
+            --flashcard-back-text: #f8f9fa;
+            --highlight-strong: var(--detail-header-color);
+            --highlight-em: #adb5bd;
+            --quote-color: #38bdf8;
+            --known-card-border: #379237;
+            --unknown-card-border: #f07178;
+            --quiz-option-bg: #495057;
+            --quiz-option-text: #f8f9fa;
+            --quiz-option-hover-bg: #5a6268;
+            --quiz-correct-bg: #225335;
+            --quiz-correct-text: #d1e7dd;
+            --quiz-incorrect-bg: #632c3b;
+            --quiz-incorrect-text: #f5c6cb;
+            --link-color: #58a6ff;
         }
-        #menu {
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: center;
-        }
-        #menu button {
-            padding: 10px 15px;
-            margin: 5px; /* Added some margin for better wrapping on small screens */
-            cursor: pointer;
-            background-color: #5cb85c;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        #menu button:hover {
-            background-color: #4cae4c;
-        }
-        .view {
-            margin-top: 20px;
-        }
-        #mapView h2, #timelineView h2 {
-            text-align: center;
-            color: #337ab7;
-        }
-        #timelineView ul li, #locations button { /* Combined style for buttons */
-            display: block;
-            width: 95%;
-            max-width: 350px;
-            margin: 10px auto;
-            padding: 12px;
-            background-color: #f0ad4e;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            text-align: center;
-            box-sizing: border-box;
-        }
-        #timelineView ul li:hover, #locations button:hover {
-            background-color: #ec971f;
-        }
-        #timelineView ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        #sceneDetailView {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-        #sceneDetailView h3 {
-            color: #d9534f;
-            margin-top: 0;
-        }
-        #sceneDetailView .action-buttons {
-            margin-bottom: 15px;
-            display: flex;
-            gap: 10px;
-        }
-        #sceneDetailView .action-buttons button {
-             padding: 8px 12px;
-             color: white;
-             border: none;
-             border-radius: 5px;
-             cursor: pointer;
-        }
-        #sceneDetailView .back-button {
-            background-color: #5bc0de;
-        }
-        #sceneDetailView .back-button:hover {
-            background-color: #46b8da;
-        }
-        #sceneDetailView .tts-button {
-            background-color: #6f42c1;
-        }
-        #sceneDetailView .tts-button:hover {
-            background-color: #5a32a3;
-        }
-        .scene-content-item h4 { color: #337ab7; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top:0;}
-        .scene-content-item h5 { color: #555; margin-top: 15px; margin-bottom: 5px;}
-        .scene-content-item p, .scene-content-item ul { margin-bottom: 10px; }
-        .scene-content-item ul { margin-left: 20px; }
-        .scene-content-item strong { color: #d9534f; }
-        .scene-content-item em { font-style: italic; color: #555; }
-        .scene-content-item .quote { font-style: italic; color: #006400; margin-left: 20px; border-left: 3px solid #006400; padding-left: 10px;}
-        #interactiveMap {
-            height: 450px;
-            width: 100%;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom:20px;
-        }
-        .map-info-text {
-            font-style: italic;
-            color: #777;
-            text-align: center;
-            margin-bottom: 10px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.7; margin: 0; padding: 20px; background-color: var(--primary-bg); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
+        .container { max-width: 950px; margin: auto; background: var(--secondary-bg); padding: 25px; border-radius: 10px; box-shadow: 0 5px 15px var(--shadow-color); }
+        #menu { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); text-align: center; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+        #menu button, .search-controls button, .flashcard-nav button, #darkModeToggle, .quiz-controls button, .quiz-option button { padding: 10px 18px; cursor: pointer; background-color: var(--button-bg); color: white; border: none; border-radius: 6px; font-size: 1em; transition: background-color 0.2s; }
+        #menu button:hover, .search-controls button:hover, .flashcard-nav button:hover, #darkModeToggle:hover, .quiz-controls button:hover, .quiz-option button:hover { background-color: var(--button-hover-bg); }
+        .view { margin-top: 25px; animation: fadeInView 0.5s ease-in-out; }
+        @keyframes fadeInView { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .view h2 { text-align: center; color: var(--header-color); margin-bottom: 20px; font-size: 2em; }
+
+        .search-controls, .filter-controls { display: flex; justify-content: center; margin-bottom: 20px; gap: 10px; align-items: center; flex-wrap: wrap;}
+        .search-controls input[type="text"], .filter-controls select, .quiz-setup select, .quiz-setup input[type="number"] { padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--secondary-bg); color: var(--text-color); font-size: 0.95em; }
+
+        #timelineView ul li, #locations button { display: block; width: 95%; max-width: 400px; margin: 10px auto; padding: 14px; background-color: var(--accent-color); color: var(--secondary-bg); border: none; border-radius: 6px; cursor: pointer; font-size: 1.05em; text-align: center; box-sizing: border-box; transition: background-color 0.2s, transform 0.1s; }
+        #timelineView ul li:hover, #locations button:hover { background-color: var(--accent-hover-color); transform: translateY(-2px); }
+        #timelineView ul { list-style-type: none; padding: 0; }
+        .hidden-by-search, .hidden-by-filter { display: none !important; }
+
+        #sceneDetailView { padding: 20px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--primary-bg); }
+        #sceneDetailView h3 { color: var(--detail-header-color); margin-top: 0; font-size: 1.8em; text-align: center; }
+        #sceneDetailView .action-buttons { margin-bottom: 20px; display: flex; flex-wrap:wrap; justify-content:center; gap: 10px; }
+        #sceneDetailView .action-buttons button { font-size: 0.9em; padding: 8px 15px; }
+        #sceneDetailView .back-button { background-color: #6c757d; } #sceneDetailView .back-button:hover { background-color: #5a6268; }
+        #sceneDetailView .tts-button { background-color: #17a2b8; } #sceneDetailView .tts-button:hover { background-color: #138496; }
+        #sceneDetailView .nav-button { background-color: var(--header-color); } #sceneDetailView .nav-button:hover { background-color: #0056b3; }
+
+        .scene-characters { background-color: var(--secondary-bg); padding: 12px 18px; border-radius: 6px; margin-bottom: 18px; border-left: 5px solid var(--accent-color); box-shadow: 0 2px 4px var(--shadow-color); }
+        .scene-characters h5 { margin-top:0; color: var(--header-color); font-size:1.1em; }
+        .scene-characters p { margin-bottom: 6px; font-size: 0.95em;}
+
+        details { background: var(--secondary-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 18px; margin-bottom: 12px; box-shadow: 0 2px 4px var(--shadow-color); }
+        summary { font-weight: bold; cursor: pointer; color: var(--header-color); font-size: 1.2em; list-style-type: '▸ '; }
+        details[open] summary { list-style-type: '▾ '; }
+        summary:hover { color: var(--button-hover-bg); }
+
+        .scene-content-item h4 { display:none; }
+        .scene-content-item h5 { color: var(--text-color); margin-top: 18px; margin-bottom: 8px; font-size: 1.2em; }
+        .scene-content-item p, .scene-content-item ul { margin-bottom: 12px; } .scene-content-item ul { margin-left: 25px; }
+        .scene-content-item strong { color: var(--highlight-strong); font-weight: 600; }
+        .scene-content-item em { font-style: italic; color: var(--highlight-em); }
+        .scene-content-item .quote { font-style: italic; color: var(--quote-color); margin: 15px 20px; border-left: 4px solid var(--quote-color); padding: 10px 15px; background-color: var(--primary-bg); border-radius:4px;}
+
+        #interactiveMap { height: 450px; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom:20px; }
+        .map-info-text { font-style: italic; color: var(--text-color); text-align: center; margin-bottom: 15px; }
+        .leaflet-tooltip { background-color: var(--secondary-bg) !important; color: var(--text-color) !important; border: 1px solid var(--header-color) !important; box-shadow: 0 1px 3px var(--shadow-color) !important; border-radius: 4px !important; padding: 6px 10px !important;}
+        .leaflet-popup-content-wrapper { background: var(--secondary-bg) !important; color: var(--text-color) !important; border-radius: 6px !important; box-shadow: 0 3px 14px var(--shadow-color) !important;}
+        .leaflet-popup-content { margin: 13px 19px !important; font-size: 1em !important; line-height: 1.5 !important;}
+        .leaflet-popup-tip { background: var(--secondary-bg) !important; box-shadow: none !important;}
+
+        #flashcardOptions { margin-bottom:15px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:15px;}
+        #flashcardContainer { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .flashcard { width: 90%; max-width: 550px; min-height: 280px; perspective: 1000px; cursor: pointer; border-radius: 10px; margin-bottom:10px; background-color: transparent; }
+        .flashcard.known { box-shadow: 0 0 0 3px var(--known-card-border), 0 4px 8px var(--shadow-color); }
+        .flashcard.unknown { box-shadow: 0 0 0 3px var(--unknown-card-border), 0 4px 8px var(--shadow-color); }
+        .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.7s; transform-style: preserve-3d; box-shadow: 0 4px 10px var(--shadow-color); border-radius: 10px; }
+        .flashcard.is-flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 25px; box-sizing: border-box; border-radius: 10px; font-size: 1.2em; }
+        .flashcard-front { background-color: var(--flashcard-front-bg); color: var(--flashcard-front-text); }
+        .flashcard-back { background-color: var(--flashcard-back-bg); color: var(--flashcard-back-text); transform: rotateY(180deg); overflow-y: auto; }
+        .flashcard-back h4 { margin-top:0; color: var(--accent-color); font-size:1.1em; }
+        .flashcard-back p { margin-bottom: 10px; font-size: 0.9em; text-align:left;}
+        .flashcard-actions { margin-top: 10px; display: flex; gap: 10px; justify-content: center;}
+        .flashcard-actions button { font-size: 0.9em; padding: 8px 12px; color:white; }
+        .flashcard-actions .known-btn { background-color: var(--known-card-border); } .flashcard-actions .known-btn:hover { background-color: #1e7e34;}
+        .flashcard-actions .unknown-btn { background-color: var(--unknown-card-border); } .flashcard-actions .unknown-btn:hover { background-color: #b21f2d;}
+        .flashcard-nav { display:flex; justify-content:center; align-items:center; gap:15px; margin-top: 10px;}
+        .flashcard-nav button { background-color: var(--header-color); font-size: 1em; color:white;}
+        .flashcard-nav button:hover { background-color: #0056b3; }
+        #cardCounter { font-size: 0.9em; color: var(--text-color); }
+
+        #quizView { text-align: center; }
+        .quiz-setup, .quiz-question-area, .quiz-results-area { margin-bottom: 20px; padding: 20px; background-color: var(--secondary-bg); border-radius: 8px; box-shadow: 0 3px 7px var(--shadow-color); }
+        .quiz-setup h3, .quiz-question-area h4, .quiz-results-area h3 { color: var(--header-color); margin-top: 0;}
+        .quiz-setup label, .quiz-setup select, .quiz-setup input { margin: 8px; padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); font-size:1em;}
+        .quiz-question-area #questionText { font-size: 1.4em; margin-bottom: 20px; color: var(--text-color); min-height: 40px;}
+        .quiz-options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+        .quiz-option button { width: 100%; background-color: var(--quiz-option-bg); color: var(--quiz-option-text); border: 1px solid var(--border-color); text-align: left; padding: 12px; font-size: 1em; }
+        .quiz-option button:hover { background-color: var(--quiz-option-hover-bg); }
+        .quiz-option button.correct { background-color: var(--quiz-correct-bg) !important; color: var(--quiz-correct-text) !important; border-color: var(--quiz-correct-text) !important;}
+        .quiz-option button.incorrect { background-color: var(--quiz-incorrect-bg) !important; color: var(--quiz-incorrect-text) !important; border-color: var(--quiz-incorrect-text) !important;}
+        .quiz-option button.selected { outline: 3px solid var(--accent-color); box-shadow: 0 0 8px var(--accent-color); }
+        #feedbackText { margin-top: 18px; font-weight: bold; font-size: 1.1em; min-height: 25px; }
+        .quiz-matching-area { display: flex; flex-direction: column; align-items: center; gap:15px; margin-bottom: 15px;}
+        .matching-columns-container { display: flex; justify-content: space-around; width:100%;}
+        .matching-column { list-style-type: none; padding: 0; width: 48%; }
+        .matching-column li { background-color: var(--quiz-option-bg); color: var(--quiz-option-text); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 8px; border-radius: 5px; cursor: pointer; transition: background-color 0.2s; }
+        .matching-column li:hover { background-color: var(--quiz-option-hover-bg); }
+        .matching-column li.selected-match-item-a, .matching-column li.selected-match-item-b { background-color: var(--accent-color); color: white; }
+        .matching-column li.correct-match { border-left: 5px solid var(--quiz-correct-bg); }
+        .matching-column li.incorrect-match { border-left: 5px solid var(--quiz-incorrect-bg); }
+        #matchSubmitButton { margin-top: 10px; }
+        #quizProgress, #quizScore { margin-top:12px; font-size: 1.1em; color: var(--text-color);}
+        #quizResultsArea p {font-size: 1.2em; margin: 10px 0;}
+
+        #darkModeToggleContainer { text-align: right; margin-bottom: 10px; }
+        #darkModeToggle { background-color: #6c757d; font-size: 0.9em; color:white; }
+        #darkModeToggle:hover { background-color: #545b62; }
+        audio { margin-top: 15px; width: 100%; }
+
     </style>
 </head>
 <body>
     <div class="container">
+        <div id="darkModeToggleContainer">
+            <button id="darkModeToggle" onclick="toggleDarkMode()">🌙 Sötét Mód</button>
+        </div>
         <header style="text-align:center; margin-bottom:20px;">
-            <h1>Az ember tragédiája - Interaktív Jegyzet</h1>
-            <p>Madách Imre művének összes színe</p>
+            <h1>Az ember tragédiája - Interaktív Tanulófelület</h1>
+            <p>Madách Imre műve</p>
         </header>
 
         <div id="menu">
             <button onclick="showView('mapView')">🗺️ Térkép Nézet</button>
             <button onclick="showView('timelineView')">⏳ Idővonal Nézet</button>
+            <button onclick="showView('flashcardView')">🎴 Tanulókártyák</button>
+            <button onclick="showView('quizView')">❓ Kvíz</button>
         </div>
 
         <div id="mapView" class="view">
             <h2>Térkép Nézet</h2>
-            <p class="map-info-text">Kattints egy jelölőre a térképen a helyszín részleteiért! Nem minden színnek van konkrét térképes jelölője (pl. Menny, Űr).</p>
+            <p class="map-info-text">Kattints egy jelölőre a térképen a helyszín részleteiért! Nem minden színnek van konkrét térképes jelölője.</p>
             <div id="interactiveMap"></div>
-            <div id="locations">
-                <!-- Gombok olyan színekhez, amiknek nincs térképjelölője, vagy ha a térkép nem tölt be -->
-                <button onclick="showSceneDetails('menny')">1. Szín: A Mennyben (Nincs térképjelölő)</button>
-                <button onclick="showSceneDetails('ur')">13. Szín: Az Űrben (Nincs térképjelölő)</button>
-            </div>
+            <div id="locations" style="text-align:center;"></div>
         </div>
 
         <div id="timelineView" class="view" style="display:none;">
             <h2>Idővonal Nézet</h2>
-            <ul>
-                <li onclick="showSceneDetails('menny')">📜 1. Szín: A Mennyben</li>
-                <li onclick="showSceneDetails('paradicsom')">📜 2. Szín: A Paradicsomban</li>
-                <li onclick="showSceneDetails('paradicsomonkivul_elom')">📜 3. Szín: A Paradicsomon kívül (Álom előtt)</li>
-                <li onclick="showSceneDetails('egyiptom')">📜 4. Szín: Egyiptom</li>
-                <li onclick="showSceneDetails('athen')">📜 5. Szín: Athén</li>
-                <li onclick="showSceneDetails('roma')">📜 6. Szín: Róma</li>
-                <li onclick="showSceneDetails('konstantinapoly')">📜 7. Szín: Konstantinápoly</li>
-                <li onclick="showSceneDetails('praga1')">📜 8. Szín: Prága I.</li>
-                <li onclick="showSceneDetails('parizs')">📜 9. Szín: Párizs</li>
-                <li onclick="showSceneDetails('praga2')">📜 10. Szín: Prága II.</li>
-                <li onclick="showSceneDetails('london')">📜 11. Szín: London</li>
-                <li onclick="showSceneDetails('falanszter')">📜 12. Szín: A Falanszter</li>
-                <li onclick="showSceneDetails('ur')">📜 13. Szín: Az Űrben</li>
-                <li onclick="showSceneDetails('eszkimo')">📜 14. Szín: Az eszkimók földjén</li>
-                <li onclick="showSceneDetails('paradicsomonkivul_utan')">📜 15. Szín: A Paradicsomon kívül (Álom után)</li>
-            </ul>
+            <div class="search-controls">
+                <input type="text" id="timelineSearchInput" onkeyup="filterTimeline()" placeholder="Keresés a színekben...">
+            </div>
+            <ul id="timelineList"></ul>
         </div>
 
         <div id="sceneDetailView" style="display:none;">
             <div class="action-buttons">
                 <button class="back-button" onclick="goBack()">↩️ Vissza</button>
-                <button class="tts-button" onclick="speakSceneContent()">🔊 Felolvasás (Backend szükséges)</button>
+                <button class="tts-button" onclick="speakSceneContent()">🔊 Felolvasás (Backend)</button>
+                <button class="nav-button" id="prevSceneButton" onclick="navigateToScene(-1)">❮ Előző Szín</button>
+                <button class="nav-button" id="nextSceneButton" onclick="navigateToScene(1)">Következő Szín ❯</button>
             </div>
             <h3 id="sceneTitleDetail"></h3>
-            <div id="sceneContentDetail">
-                <!-- Content will be injected here -->
+            <div id="sceneContentDetail"></div>
+            <audio id="audioPlayer" controls></audio>
+        </div>
+
+
+        <div id="flashcardView" class="view" style="display:none;">
+            <h2>Tanulókártyák</h2>
+            <div class="search-controls">
+                <input type="text" id="flashcardSearchInput" onkeyup="filterFlashcards()" placeholder="Keresés a kártyacímekben...">
             </div>
-            <audio id="audioPlayer" controls style="width: 100%; margin-top: 15px;"></audio>
+            <div id="flashcardOptions" class="filter-controls">
+                <label for="shuffleFlashcards">Keverés:</label>
+                <input type="checkbox" id="shuffleFlashcards" onchange="toggleShuffleAndReloadFlashcards()">
+                <label for="filterKnownFlashcards" style="margin-left: 15px;">Szűrés:</label>
+                <select id="filterKnownFlashcards" onchange="filterFlashcardsByKnownStatus()">
+                    <option value="all">Összes kártya</option>
+                    <option value="unknown">Csak a "Még nem" tudottak</option>
+                    <option value="known">Csak a "Tudom" jelöltek</option>
+                </select>
+            </div>
+            <div id="flashcardContainer">
+                <div class="flashcard" onclick="flipCurrentCard()">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front"><p id="flashcardQuestion"></p></div>
+                        <div class="flashcard-back"><div id="flashcardAnswer"></div></div>
+                    </div>
+                </div>
+                <div class="flashcard-actions">
+                    <button class="unknown-btn" onclick="markFlashcard(false)">❌ Még nem</button>
+                    <button class="known-btn" onclick="markFlashcard(true)">✅ Tudom</button>
+                </div>
+                <div class="flashcard-nav">
+                    <button onclick="prevFlashcard()">❮ Előző</button>
+                    <span id="cardCounter">1 / X</span>
+                    <button onclick="nextFlashcard()">Következő ❯</button>
+                </div>
+            </div>
+            <p id="noFlashcardsFound" style="text-align:center; display:none; margin-top:20px;">Nincsenek a keresésnek/szűrésnek megfelelő kártyák.</p>
+        </div>
+
+        <div id="quizView" class="view" style="display:none;">
+            <h2>Kvíz</h2>
+            <div class="quiz-setup" id="quizSetupArea">
+                <h3>Kvíz Beállítások</h3>
+                <div>
+                    <label for="quizNumQuestions">Kérdések száma:</label>
+                    <select id="quizNumQuestions">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="15">15</option>
+                        <option value="all">Összes generált</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="quizQuestionType">Kérdés típusok:</label>
+                    <select id="quizQuestionType">
+                        <option value="all" selected>Vegyes</option>
+                        <option value="mcq_roles">Szereplők (MCQ)</option>
+                        <option value="mcq_ideas">Fő eszmék (MCQ)</option>
+                        <option value="match_scene_role">Szín-Szerep Párosítás</option>
+                        <option value="match_scene_idea">Szín-Eszme Párosítás</option>
+                    </select>
+                </div>
+                <button onclick="startQuiz()" style="margin-top:15px; background-color:var(--accent-color);">Kvíz Indítása</button>
+            </div>
+
+            <div class="quiz-question-area" id="quizQuestionArea" style="display:none;">
+                <div id="quizProgress"></div>
+                <div id="quizScore" style="margin-bottom:10px;"></div>
+                <h4 id="questionText">Kérdés szövege itt...</h4>
+                <div id="mcqOptions" class="quiz-options-grid"></div>
+                <div id="matchingOptions" class="quiz-matching-area">
+                    <div class="matching-columns-container">
+                        <ul class="matching-column" id="matchingColumnA"></ul>
+                        <ul class="matching-column" id="matchingColumnB"></ul>
+                    </div>
+                    <button onclick="submitMatchAnswer()" id="matchSubmitButton" class="quiz-controls" style="display:none; margin-top:10px;">Párosítás Ellenőrzése</button>
+                </div>
+                <p id="feedbackText"></p>
+                <button onclick="nextQuizQuestion()" id="nextQuestionButton" class="quiz-controls" style="display:none; margin-top:10px;">Következő Kérdés</button>
+            </div>
+
+            <div class="quiz-results-area" id="quizResultsArea" style="display:none;">
+                <h3>Kvíz Eredménye</h3>
+                <p id="finalScoreText">Pontszámod: X / Y</p>
+                <p id="finalPercentageText">Százalék: Z%</p>
+                <button onclick="restartQuizSetup()" class="quiz-controls">Új Kvíz</button>
+            </div>
         </div>
 
         <div id="sceneStore" style="display:none;">
-            <div id="content-menny" class="scene-content-item">
+            <div id="content-menny" class="scene-content-item" data-scene-key="menny" data-adam-role="N/A (Még nem jelenik meg)" data-eva-role="N/A (Még nem jelenik meg)" data-lucifer-role="Kritikus, Tagadó Szellem" data-main-idea="A teremtés tökéletessége vs. a tagadás és a kritika joga." data-location-name="A Menny" data-period="Kezdetek">
                 <h4>1. Szín: A Mennyben</h4>
-                <p><strong>Helyszín:</strong> A Menny.</p>
-                <h5>Szereplők:</h5>
-                <ul>
-                    <li><strong>Az Úr:</strong> A teremtő, aki elégedett művével.</li>
-                    <li><strong>Angyalok kara (Gábor, Mihály, Rafael vezetésével):</strong> Dicsőítik a teremtést, mindegyikük más aspektusát emelve ki (eszme, erő, jóság).</li>
-                    <li><strong>Lucifer:</strong> A tagadás szelleme, aki kritikával illeti a teremtést, hiányolja az összhangot és az egyén önelvűségét hirdeti. Szembeszáll az Úrral.</li>
-                </ul>
-                <h5>Központi eszme:</h5>
-                <p>A teremtés tökéletessége vs. a tagadás és a kritika joga. Az isteni világrend és a disszonancia megjelenése.</p>
-                <h5>Cselekmény és konfliktus:</h5>
-                <p>Az angyalok dicsőítik Istent és a világot. Lucifer egyedüliként nem magasztalja a teremtést, hanem annak hiányosságaira, az anyag és a szellem közötti feszültségre mutat rá. Kétségbe vonja az ember tökéletességét és boldogságát. Az Úr, hogy Lucifer kritikája ne csak romboljon, hanem része legyen a világnak ("A tagadás is, tudom, eszközöd / Hogy éltess és teremts"), neki adja a tudás és az ítélet fáját a Paradicsomban.</p>
-                <h5>Ádám (még nem jelenik meg, de sorsa itt kezdődik):</h5>
-                <p>A szín megalapozza a drámai küzdelmet, amelynek Ádám lesz a főszereplője. Lucifer elhatározza, hogy megkísérti az embert.</p>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Az Úr:</strong> A teremtő.</p><p><strong>Angyalok kara:</strong> Gábor (Eszme), Mihály (Erő), Rafael (Jóság).</p><p><strong>Lucifer:</strong> A tagadás szelleme.</p></div>
+                <details open><summary>Központi eszme</summary><p>A teremtés tökéletessége vs. a tagadás és a kritika joga. Az isteni világrend és a disszonancia megjelenése.</p></details>
+                <details><summary>Cselekmény és konfliktus</summary><p>Az angyalok dicsőítik a teremtést. Lucifer kritikával illeti azt. Az Úr neki adja a tudás és ítélet fáját.</p></details>
+                <details><summary>Jelentőség</summary><p>Megalapozza a drámai küzdelmet; Lucifer elhatározza az ember megkísértését.</p></details>
             </div>
 
-            <div id="content-paradicsom" class="scene-content-item">
+            <div id="content-paradicsom" class="scene-content-item" data-scene-key="paradicsom" data-adam-role="Az első ember (ártatlan)" data-eva-role="Az első nő (ártatlan)" data-lucifer-role="Kísértő" data-main-idea="Ártatlanság, tudatlanság boldogsága vs. tudásvágy; bűnbeesés." data-location-name="Paradicsom" data-period="Kezdetek">
                 <h4>2. Szín: A Paradicsomban</h4>
-                <p><strong>Helyszín:</strong> Az Édenkert.</p>
-                <h5>Szereplők:</h5>
-                <ul>
-                    <li><strong>Ádám:</strong> Az első ember, boldog tudatlanságban él.</li>
-                    <li><strong>Éva:</strong> Az első nő, Ádám társa.</li>
-                    <li><strong>Lucifer:</strong> Kígyó képében (vagy anélkül) jelenik meg, hogy megkísértse az emberpárt.</li>
-                </ul>
-                <h5>Központi eszme:</h5>
-                <p>Az ártatlanság, a tudatlanság boldogsága vs. a tudásvágy, a fejlődés iránti ösztön. A bűnbeesés lehetősége.</p>
-                <h5>Cselekmény és konfliktus:</h5>
-                <p>Ádám és Éva gondtalanul élnek a Paradicsomban, az Úr gondviselésében. Lucifer megjelenik, és a tudás ígéretével, az "istenekké válás" csábításával kísérti meg őket. Elülteti bennük a kétséget és a vágyat a tiltott gyümölcs iránt. Éva kíváncsisága és Ádám tudásvágya erősebbnek bizonyul az Úr parancsánál. Mindketten esznek a tudás fájának gyümölcséből.</p>
-                <h5>Ádám és Éva felismerése/állapota a szín végén:</h5>
-                <p>Felnyílik a szemük, elveszítik ártatlanságukat. Megismerik a jót és a rosszat, de ezzel együtt a szégyent, a félelmet és a halandóságot is. Az Úr kérdőre vonja őket, és kiűzi őket a Paradicsomból.</p>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Az első ember.</p><p><strong>Éva:</strong> Az első nő.</p><p><strong>Lucifer:</strong> Kísértő.</p></div>
+                <details open><summary>Központi eszme</summary><p>Az ártatlanság, a tudatlanság boldogsága vs. a tudásvágy, a fejlődés iránti ösztön. A bűnbeesés lehetősége.</p></details>
+                <details><summary>Cselekmény és konfliktus</summary><p>Gondtalan élet. Lucifer a tudás ígéretével kísért. Esznek a tiltott gyümölcsből.</p></details>
+                <details><summary>Ádám és Éva felismerése/állapota</summary><p>Elveszítik ártatlanságukat, megismerik a jót-rosszat, szégyent, félelmet, halandóságot. Kiűzetnek.</p></details>
             </div>
 
-            <div id="content-paradicsomonkivul_elom" class="scene-content-item">
+            <div id="content-paradicsomonkivul_elom" class="scene-content-item" data-scene-key="paradicsomonkivul_elom" data-adam-role="Földön küzdő ember" data-eva-role="Ádám társa a száműzetésben" data-lucifer-role="Álom felajánlója" data-main-idea="Földi lét nehézségei, munka. Vágy a jövő megismerésére." data-location-name="Paradicsomon kívül" data-period="Kezdetek">
                 <h4>3. Szín: A Paradicsomon kívül (Álom előtt)</h4>
-                <p><strong>Helyszín:</strong> Kopár táj a Paradicsomon kívül.</p>
-                <h5>Szereplők:</h5>
-                <ul>
-                    <li><strong>Ádám:</strong> A földön küzdő ember, aki munkával próbálja fenntartani magát és családját.</li>
-                    <li><strong>Éva:</strong> Ádám társa a száműzetésben, igyekszik otthonossá tenni környezetüket.</li>
-                    <li><strong>Lucifer:</strong> Megjelenik, hogy tovább fokozza Ádám kiábrándultságát.</li>
-                </ul>
-                <h5>Központi eszme:</h5>
-                <p>A földi lét nehézségei, a munka, a küzdelem. Az ember vágya a tudásra, a jövő megismerésére.</p>
-                <h5>Cselekmény és konfliktus:</h5>
-                <p>Ádám és Éva a Paradicsomon kívüli mostoha világban élnek. Ádám vadászik, kunyhót épít, Éva gyümölcsöt gyűjt, otthonukat szépíti. Ádámban felmerül a küzdelem értelme és a jövő iránti kíváncsiság. Lucifer megjelenik, és felajánlja Ádámnak, hogy álmot bocsát rá, melyben megmutatja neki az emberiség jövőjét, hogy lássa, miért küzd. Ádám elfogadja az ajánlatot, remélve, hogy értelmet talál.</p>
-                <h5>Ádám és Éva állapota a szín végén:</h5>
-                <p>Ádám és Éva elalszanak. Lucifer álmot bocsát Ádámra. Éva innentől (jelképesen) alszik egészen a 15. színig, míg Ádám végigálmodja a történelmi korokat.</p>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Földi küzdelmek.</p><p><strong>Éva:</strong> Társa.</p><p><strong>Lucifer:</strong> Álmot ajánl.</p></div>
+                <details open><summary>Központi eszme</summary><p>A földi lét nehézségei, a munka, a küzdelem. Az ember vágya a tudásra, a jövő megismerésére.</p></details>
+                <details><summary>Cselekmény és konfliktus</summary><p>Mostoha világ. Ádám a küzdelem értelmét keresi. Lucifer álmot bocsát rá a jövőről.</p></details>
+                <details><summary>Ádám és Éva állapota</summary><p>Elalszanak. Ádám álomutazása kezdődik, Éva jelképesen alszik a 15. színig.</p></details>
             </div>
 
-            <!-- 4-10. szín tartalma (már meglévő) -->
-            <div id="content-egyiptom" class="scene-content-item"><h4>4. Szín: Egyiptom (Tézis)</h4> <!-- ... (tartalom változatlan) ... --> </div>
-            <div id="content-athen" class="scene-content-item"><h4>5. Szín: Athén (Antitézis)</h4> <!-- ... (tartalom változatlan) ... --> </div>
-            <div id="content-roma" class="scene-content-item"><h4>6. Szín: Róma (Szintézis felé...)</h4> <!-- ... (tartalom változatlan) ... --> </div>
-            <div id="content-konstantinapoly" class="scene-content-item"><h4>7. Szín: Konstantinápoly (Bizánc)</h4> <!-- ... (tartalom változatlan) ... --> </div>
-            <div id="content-praga1" class="scene-content-item"><h4>8. Szín: Prága I.</h4> <!-- ... (tartalom változatlan) ... --> </div>
-            <div id="content-parizs" class="scene-content-item"><h4>9. Szín: Párizs ("Álom az álomban")</h4> <!-- ... (tartalom változatlan) ... --> </div>
-            <div id="content-praga2" class="scene-content-item"><h4>10. Szín: Prága II.</h4> <!-- ... (tartalom változatlan) ... --> </div>
-
-            <div id="content-london" class="scene-content-item">
-                <h4>11. Szín: London</h4>
-                <p><strong>Kor és helyszín:</strong> A 19. századi kapitalista London, az ipari forradalom kora.</p>
-                <h5>Szereplők:</h5>
-                <ul>
-                    <li><strong>Ádám:</strong> Kiábrándult, idősödő polgárként szemléli a nyüzsgő, de ellentmondásos várost.</li>
-                    <li><strong>Éva:</strong> Több alakban is megjelenik: előkelő dáma, majd elszegényedett, utcára került lány (virágárus, majd prostituált).</li>
-                    <li><strong>Lucifer:</strong> Ádám kísérője, aki a kapitalizmus visszásságait mutatja be.</li>
-                    <li><strong>Koldusok, munkások, tőkések, vásári árusok, sírásók.</strong></li>
-                </ul>
-                <h5>Központi eszme:</h5>
-                <p>A "szabad verseny" kapitalizmusa, az ipari fejlődés, a haladás mindenhatósága vs. társadalmi egyenlőtlenségek, elidegenedés, az emberi értékek háttérbe szorulása.</p>
-                <h5>Cselekmény és konfliktus:</h5>
-                <p>A szín egy nyüzsgő londoni vásártér forgatagában játszódik, ahol a "minden eladó" elv uralkodik. Ádám látja a gazdagság és a mélységes szegénység éles ellentétét. A tudomány és a technika fejlődése ellenére az emberi kapcsolatok kiüresednek, a pénz válik a legfőbb értékmérővé. A munkások kizsákmányolása, az elidegenedés és a társadalmi igazságtalanságok uralkodnak. Éva sorsa a társadalmi lecsúszást példázza. A sírásók a halál egyetemességét és a földi hiúságokat hangsúlyozzák.</p>
-                <h5>Ádám felismerése/vágya a szín végén:</h5>
-                <p>Ádám mélységesen kiábrándul ebből a világból, ahol a haladás nem hozott boldogságot, csak újabb szenvedést és igazságtalanságot. Undorodik a pénz hatalmától és az emberi érzések elüzletiesedésétől. Vágyik egy olyan társadalomra, ahol a tudomány és a racionalitás talán valódi rendet és igazságosságot teremt, ez vezeti a Falanszter víziójához.</p>
+            <div id="content-egyiptom" class="scene-content-item" data-scene-key="egyiptom" data-adam-role="Ifjú fáraó" data-eva-role="Rabszolganő felesége" data-lucifer-role="Ádám minisztere" data-main-idea="Egyéni dicsőség, hatalom, halhatatlanság ('Milliók egy miatt')." data-location-name="Egyiptom" data-period="Ókor">
+                <h4>4. Szín: Egyiptom</h4>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Ifjú fáraó.</p><p><strong>Éva:</strong> Rabszolganő felesége.</p><p><strong>Lucifer:</strong> Ádám minisztere.</p></div>
+                <details open><summary>Központi eszme (Tézis)</summary><p>Az egyéni dicsőség, hatalom, halhatatlanság vágya. <em>"Milliók egy miatt."</em></p></details>
+                <details><summary>Cselekmény és konfliktus (Antitézis)</summary><p>Piramisépítés. Egy rabszolganő (Éva) átka és a szenvedés rádöbbenti Ádámot a dicsőség árára.</p></details>
+                <details><summary>Ádám felismerése/Új cél</summary><p>Kiábrándulás az egyéni dicsőségből. Vágy az egyenlőségre, a nép szabadságára. <em>"Egy millióért!"</em></p></details>
             </div>
 
-            <div id="content-falanszter" class="scene-content-item">
+            <div id="content-athen" class="scene-content-item" data-scene-key="athen" data-adam-role="Miltiádész (hadvezér)" data-eva-role="Lucia (Miltiádész felesége)" data-lucifer-role="Demagóg" data-main-idea="Demokrácia, szabadság, népuralom." data-location-name="Athén" data-period="Ókor">
+                <h4>5. Szín: Athén</h4>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Miltiádész.</p><p><strong>Éva:</strong> Lucia.</p><p><strong>Lucifer:</strong> Demagóg.</p></div>
+                <details open><summary>Központi eszme (Tézis)</summary><p>Demokrácia, szabadság, népuralom.</p></details>
+                <details><summary>Cselekmény és konfliktus (Antitézis)</summary><p>A nép Miltiádész ellen fordul. Árulással vádolják és halálra ítélik.</p></details>
+                <details><summary>Ádám felismerése/Új cél</summary><p>Csalódás a népben és a demokráciában. Hedonizmus felé fordul: <em>"Örülj, mulass..."</em></p></details>
+            </div>
+
+            <div id="content-roma" class="scene-content-item" data-scene-key="roma" data-adam-role="Sergiolus (gazdag arisztokrata)" data-eva-role="Júlia (léha nő)" data-lucifer-role="Miló (mulatótárs)" data-main-idea="Hedonizmus, gyönyörök hajszolása (carpe diem)." data-location-name="Róma" data-period="Ókor">
+                <h4>6. Szín: Róma</h4>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Sergiolus.</p><p><strong>Éva:</strong> Júlia.</p><p><strong>Lucifer:</strong> Miló.</p><p><strong>Péter apostol.</strong></p></div>
+                <details open><summary>Központi eszme (Tézis)</summary><p>Hedonizmus, gyönyörök hajszolása (carpe diem).</p></details>
+                <details><summary>Cselekmény és konfliktus (Antitézis)</summary><p>Orgiák, pestis. Az élvezetek kiüresedése. Hippia halála.</p></details>
+                <details><summary>Ádám felismerése/Új cél</summary><p>Kiábrándulás. Péter apostol hatására a keresztény testvériség, szeretet felé fordul.</p></details>
+            </div>
+
+            <div id="content-konstantinapoly" class="scene-content-item" data-scene-key="konstantinapoly" data-adam-role="Tankréd (keresztes lovag)" data-eva-role="Izóra (apáca)" data-lucifer-role="Fegyverhordozó" data-main-idea="Keresztény hit, testvériség (eltorzult formában)." data-location-name="Konstantinápoly (Bizánc)" data-period="Középkor">
+                <h4>7. Szín: Konstantinápoly (Bizánc)</h4>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Tankréd.</p><p><strong>Éva:</strong> Izóra.</p><p><strong>Lucifer:</strong> Fegyverhordozó.</p></div>
+                <details open><summary>Központi eszme (Tézis)</summary><p>Keresztény hit, testvériség, szeretet.</p></details>
+                <details><summary>Cselekmény és konfliktus (Antitézis)</summary><p>A kereszténység eltorzulása: dogmatizmus, vallási türelmetlenség, eretneküldözés.</p></details>
+                <details><summary>Ádám felismerése/Új cél</summary><p>Csalódás. A tudomány felé fordul.</p></details>
+            </div>
+
+            <div id="content-praga1" class="scene-content-item" data-scene-key="praga1" data-adam-role="Johannes Kepler (csillagász)" data-eva-role="Borbála (Kepler felesége)" data-lucifer-role="Famulus (Kepler segédje)" data-main-idea="Tudomány, megismerés, a világ megértése." data-location-name="Prága" data-period="Újkor (Reneszánsz)">
+                <h4>8. Szín: Prága I.</h4>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Kepler.</p><p><strong>Éva:</strong> Borbála.</p><p><strong>Lucifer:</strong> Famulus.</p></div>
+                <details open><summary>Központi eszme (Tézis)</summary><p>Tudomány, megismerés, a világ megértésének vágya.</p></details>
+                <details><summary>Cselekmény és konfliktus (Antitézis)</summary><p>A tudós anyagi gondjai, kiszolgáltatottsága. Felesége kicsapongó, értetlen.</p></details>
+                <details><summary>Ádám állapota/Új cél</summary><p>Csalódás a tudós létben. Álomba menekül, a forradalom eszméi felé.</p></details>
+            </div>
+
+            <div id="content-parizs" class="scene-content-item" data-scene-key="parizs" data-adam-role="Danton (forradalmár)" data-eva-role="Két alakban: Arisztokrata márkinő / Vérszomjas forradalmárnő" data-lucifer-role="Hóhér" data-main-idea="'Egyenlőség, testvériség, szabadság!' (Francia forradalom)." data-location-name="Párizs" data-period="Újkor (Forradalmak kora)">
+                <h4>9. Szín: Párizs ("Álom az álomban")</h4>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Danton.</p><p><strong>Éva:</strong> Márkinő/Forradalmárnő.</p><p><strong>Lucifer:</strong> Hóhér.</p></div>
+                <details open><summary>Központi eszme (Tézis)</summary><p><em>"Egyenlőség, testvériség, szabadság!"</em> – a francia forradalom jelszavai.</p></details>
+                <details><summary>Cselekmény és konfliktus (Antitézis)</summary><p>Forradalmi hév, majd terror, erőszak, kivégzések. A forradalom felfalja gyermekeit.</p></details>
+                <details><summary>Ádám felismerése/állapota</summary><p>Kiábrándulás az eszmék véres megvalósulásából. Felébred.</p></details>
+            </div>
+
+             <div id="content-praga2" class="scene-content-item" data-scene-key="praga2" data-adam-role="Johannes Kepler (felébredve)" data-eva-role="Borbála (felesége)" data-lucifer-role="Famulus" data-main-idea="Tudomány és forradalmi eszmék újraértékelése." data-location-name="Prága" data-period="Újkor (Reneszánsz)">
+                <h4>10. Szín: Prága II.</h4>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Kepler.</p><p><strong>Éva:</strong> Borbála.</p><p><strong>Lucifer:</strong> Famulus.</p><p><strong>Tanítvány.</strong></p></div>
+                <details open><summary>Központi eszme</summary><p>A tudomány és a forradalmi eszmék újraértékelése a párizsi álom után.</p></details>
+                <details><summary>Cselekmény és konfliktus</summary><p>Kepler felébred. Párizsi álom hatása. Kiábrándult a tanítvány naiv lelkesedésétől. Éva is visszatér.</p></details>
+                <details><summary>Ádám állapota/Új cél</summary><p>Óvatos remény, de kiábrándultság. Lucifer új álmot ígér: London.</p></details>
+            </div>
+
+            <div id="content-london" class="scene-content-item" data-scene-key="london" data-adam-role="Idősödő, kiábrándult polgár" data-eva-role="Több alakban (Dáma / Virágárus / Prostituált)" data-lucifer-role="Cinikus kísérő" data-main-idea="'Szabad verseny' kapitalizmusa, ipari fejlődés." data-location-name="London" data-period="Újkor (Ipari forradalom)">
+                 <h4>11. Szín: London</h4>
+                 <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Idősödő polgár.</p><p><strong>Éva:</strong> Dáma/Virágárus.</p><p><strong>Lucifer:</strong> Kísérő.</p></div>
+                <details open><summary>Központi eszme (Tézis)</summary><p>A "szabad verseny" kapitalizmusa, ipari fejlődés, haladás.</p></details>
+                <details><summary>Cselekmény és konfliktus (Antitézis)</summary><p>Nyüzsgő vásár, <em>"minden eladó"</em>. Gazdagság vs. nyomor. Elidegenedés, pénz hatalma. Éva sorsa.</p></details>
+                <details><summary>Ádám felismerése/Új cél</summary><p>Kiábrándulás. Undor a pénz hatalmától. Vágy egy racionális társadalomra (Falanszter).</p></details>
+            </div>
+
+            <div id="content-falanszter" class="scene-content-item" data-scene-key="falanszter" data-adam-role="Kritikus szemlélő" data-eva-role="Munkáslány (Ádámhoz rendelve)" data-lucifer-role="Cinikus kommentátor" data-main-idea="Tudomány mindenhatósága, totális racionalitás, közjó, hasznosság." data-location-name="Falanszter (Jövő)" data-period="Jövő (Utópia/Disztópia)">
                 <h4>12. Szín: A Falanszter</h4>
-                <p><strong>Kor és helyszín:</strong> A távoli jövő, egy tudományosan megszervezett, utópisztikus társadalom.</p>
-                <h5>Szereplők:</h5>
-                <ul>
-                    <li><strong>Ádám:</strong> Kezdetben csodálattal, majd kritikával szemléli a "tökéletes" világot.</li>
-                    <li><strong>Éva:</strong> Munkáslány, akit a rendszer Ádám mellé jelöl.</li>
-                    <li><strong>Lucifer:</strong> Cinikusan rávilágít a rendszer visszásságaira.</li>
-                    <li><strong>Tudós:</strong> A Falanszter rideg, érzelemmentes vezetője.</li>
-                    <li><strong>Plátó (fazekas), Michelangelo (széklábfaragó), és más "bűnösök".</strong></li>
-                </ul>
-                <h5>Központi eszme:</h5>
-                <p>A tudomány mindenhatósága, teljes racionalitás, közjó, hasznosság. Az egyéni vágyak, érzelmek, művészetek kiiktatása. ("Nincsenek országok, haza, csak a telepek vannak." - a jegyzeteidből egy ide illő gondolat, ami az individualitás és a hagyományos kötelékek megszűnésére utal, hasonlóan Orwell *1984* disztópiájához.)</p>
-                <h5>Cselekmény és konfliktus:</h5>
-                <p>Ádám egy tökéletesen szabályozott, de lélektelen világba érkezik. Az individualitás, a művészet, a szerelem és a család kiüresedik vagy megszűnik a "hasznosság" nevében. A "bűnösöket" (akik érzelmeket mutatnak, önállóan gondolkodnak, vagy "haszontalanná" válnak) a rendszer kegyetlenül megbünteti vagy kiiktatja (pl. lantot készítő férfi megvesszőzése; gyermekeit dajkáló anya kórházba zárása; merészen gondolkodó ifjú sötétben koplaltatása; munkaképtelen agg megmérgezése). Plátónak borsón kell térdepelnie, ha "fellázad", Michelangelónak széklábat kell faragnia.</p>
-                <p class="quote">A Tudós a zsenikről: "Elővigyázatunk rég gondoskodott, / Hogy ne teremjen többé a világon / Luther, Cassius, Brutus és hasonló / Kóros fejü, kik rendünket zavarják... a beteg / Csirát születésekor már elnyomom."</p>
-                <h5>Ádám felismerése/vágya a szín végén:</h5>
-                <p>Ádám számára ez a világ elviselhetetlen. Felismeri, hogy az emberi lét lényege a tökéletlenségben, szenvedélyekben, küzdelemben rejlik. Undorodik a hideg racionalitástól, és visszavágyik egy természetesebb, bár küzdelmesebb életformába. Ez vezeti az Űr felé.</p>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Szemlélő.</p><p><strong>Éva:</strong> Munkáslány.</p><p><strong>Lucifer:</strong> Kommentátor.</p><p><strong>Tudós.</strong></p><p><strong>"Bűnösök", Plátó, Michelangelo.</strong></p></div>
+                <details open><summary>Központi eszme (Tézis)</summary><p>Tudomány mindenhatósága, totális racionalitás, közjó és hasznosság elve. Az individualitás, érzelmek, művészetek kiiktatása.</p></details>
+                <details><summary>Cselekmény és konfliktus (Antitézis)</summary><p>Tökéletesen szabályozott, de lélektelen világ. Egyéniség elnyomása. Művészet leértékelése. "Haszontalan" egyének kegyetlen büntetése/kiiktatása. Zsenik preventív "elnyomása".</p></details>
+                <details><summary>Ádám felismerése/Új cél</summary><p>Undor a hideg racionalitásból. Vágy a tiszta szellem világába (Űr).</p></details>
             </div>
 
-            <div id="content-ur" class="scene-content-item">
+            <div id="content-ur" class="scene-content-item" data-scene-key="ur" data-adam-role="Az Abszolútumot kereső" data-eva-role="N/A (A Föld Szelleme szól)" data-lucifer-role="Szkeptikus kísérő" data-main-idea="Vágy a transzcendenciára, tiszta szellemiségre. Elszakadás az anyagtól." data-location-name="Az Űr" data-period="Jövő (Kozmikus út)">
                 <h4>13. Szín: Az Űrben</h4>
-                <p><strong>Helyszín:</strong> A világűr, Ádám és Lucifer elszakadnak a Földtől.</p>
-                <h5>Szereplők:</h5>
-                <ul>
-                    <li><strong>Ádám:</strong> Kétségbeesetten keresi a lét végső értelmét, az Abszolútumot.</li>
-                    <li><strong>Lucifer:</strong> Gúnyosan és szkeptikusan kíséri Ádámot, próbálja megfosztani minden illúziójától.</li>
-                    <li><strong>A Föld Szellemének hangja:</strong> Megszólítja Ádámot, figyelmezteti az elszakadás veszélyeire.</li>
-                </ul>
-                <h5>Központi eszme:</h5>
-                <p>Az ember vágya a transzcendenciára, a végső tudásra. Az anyagtól való elszakadás, a tiszta szellemiség keresése és annak veszélyei. A földi lét korlátai és értékei.</p>
-                <h5>Cselekmény és konfliktus:</h5>
-                <p>A Falanszterből kiábrándulva Ádám a tiszta szellem világába, az Abszolútumhoz vágyik. Luciferrel egyre távolabb kerülnek a Földtől. Ádám kezdetben felszabadultnak érzi magát, de ahogy távolodik, úgy érzi a hidegséget, a magányt és a semmit. A Föld Szelleme visszahívja, figyelmeztetve, hogy az ember csak a Földhöz kötve, az anyagban élhet és küzdhet. (A jegyzeteidből: "Ádám csak érinti az idegen világot, csak egy pillanatra megmerevül, viszont utána vissza tudja lehelni a Földre.") Lucifer szerint a szellem csak az anyagban nyilvánulhat meg. Ádám rájön, hogy a tiszta szellemiség számára elérhetetlen és embertelen.</p>
-                <h5>Ádám felismerése/vágya a szín végén:</h5>
-                <p>Ádám belátja, hogy az ember sorsa a Földhöz kötött. A transzcendencia vágya helyett visszavágyik a földi küzdelmekhez, az anyaghoz, az élethez. Elfogadja az emberi lét korlátait, de továbbra is keresi a fejlődés és a remény lehetőségét.</p>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Kereső.</p><p><strong>Lucifer:</strong> Kísérő.</p><p><strong>Föld Szellemének hangja.</strong></p></div>
+                <details open><summary>Központi eszme</summary><p>Vágy a transzcendenciára, a tiszta szellemiségre. Az anyagtól való elszakadás és annak veszélyei.</p></details>
+                <details><summary>Cselekmény és konfliktus</summary><p>Elszakadás a Földtől. Kezdeti felszabadultság, majd hidegség, magány, semmi. A Föld Szelleme visszahívja.</p></details>
+                <details><summary>Ádám felismerése/Új cél</summary><p>Sorsa a Földhöz kötött. Visszavágyik a földi küzdelmekhez. A fejlődés utolsó lehetőségét keresi.</p></details>
             </div>
 
-            <div id="content-eszkimo" class="scene-content-item">
+            <div id="content-eszkimo" class="scene-content-item" data-scene-key="eszkimo" data-adam-role="Idős, haldokló ember" data-eva-role="Eszkimó nő (fajfenntartás utolsó reménye)" data-lucifer-role="Cinikus szemlélő" data-main-idea="Emberiség teljes leépülése. Puszta létfenntartás. Darwini determinizmus." data-location-name="Eszkimók földje (Jövő vége)" data-period="Jövő (Végkifejlet)">
                 <h4>14. Szín: Az eszkimók földjén</h4>
-                <p><strong>Helyszín:</strong> A jég és hó birodalma, a kihalófélben lévő emberiség utolsó menedéke.</p>
-                <h5>Szereplők:</h5>
-                <ul>
-                    <li><strong>Ádám:</strong> Idős, meggyötört emberként érkezik.</li>
-                    <li><strong>Éva:</strong> Eszkimó nőként jelenik meg, a fajfenntartás utolsó reménye.</li>
-                    <li><strong>Lucifer:</strong> Ádám kísérője.</li>
-                    <li><strong>Eszkimó férfi:</strong> A durva, túlélésért küzdő ember típusa.</li>
-                </ul>
-                <h5>Központi eszme:</h5>
-                <p>Az emberiség teljes fizikai és szellemi leépülése. A puszta létfenntartásért folytatott küzdelem, az ideálok és a magasabb rendű célok elvesztése. A darwini determinizmus (a jegyzeteidből: "Párhuzamos elmélete jelenik meg -> a tápláléklánc gondolata (Charles Darwin)").</p>
-                <h5>Cselekmény és konfliktus:</h5>
-                <p>A Föld egy haldokló bolygó, amelyet jég borít. Az emberiség maradéka az eszkimók képében a legalapvetőbb ösztönökért (élelem, fajfenntartás) küzd. (A jegyzeteidből: "A tudósok elméletei -> nem sikerült pótolni a napenergiát. Az emberiség az eszkimóképviselői.") Az erkölcs, a tudomány, a művészet teljesen eltűnt. Az ember "fajilag, erkölcsileg és szellemileg leépült, és visszataszítóvá vált." Az utolsó nő (Éva) egy eszkimó férfihoz akarja adni magát a fajfenntartásért, ami végképp elkeseríti Ádámot.</p>
-                <h5>Ádám felismerése/állapota a szín végén:</h5>
-                <p>Ádám számára ez a végső és legmélyebb kiábrándulás. Minden, amiért az emberiség korábban küzdött, semmivé lett. A fejlődés és a haladás illúziója szertefoszlik. Úgy érzi, minden küzdelem hiábavaló volt. Ezzel az érzéssel ébred fel álmából a következő, utolsó színben.</p>
+                <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Haldokló.</p><p><strong>Éva:</strong> Eszkimó nő.</p><p><strong>Lucifer:</strong> Szemlélő.</p><p><strong>Eszkimó férfi.</strong></p></div>
+                <details open><summary>Központi eszme</summary><p>Az emberiség teljes fizikai és szellemi leépülése. Puszta létfenntartás, ideálok elvesztése. Darwini determinizmus.</p></details>
+                <details><summary>Cselekmény és konfliktus</summary><p>Haldokló Föld, jég borítja. Emberiség maradéka ösztönlényként küzd. Erkölcs, tudomány, művészet eltűnt.</p></details>
+                <details><summary>Ádám állapota</summary><p>Végső kiábrándulás. Minden küzdelem hiábavalónak tűnik. Ezzel ébred fel.</p></details>
             </div>
 
-            <div id="content-paradicsomonkivul_utan" class="scene-content-item">
+            <div id="content-paradicsomonkivul_utan" class="scene-content-item" data-scene-key="paradicsomonkivul_utan" data-adam-role="Felébredt, kétségbeesett ember" data-eva-role="Reményt hozó anya" data-lucifer-role="Utolsó kísértő" data-main-idea="Lét értelmének végső kérdése. Szabad akarat vs. determinizmus. Küzdelem és hit." data-location-name="Paradicsomon kívül" data-period="Jelen (Lezárás)">
                 <h4>15. Szín: A Paradicsomon kívül (Álom után)</h4>
-                <p><strong>Helyszín:</strong> Ugyanaz a kopár táj, mint a 3. színben.</p>
-                <h5>Szereplők:</h5>
-                <ul>
-                    <li><strong>Ádám:</strong> Felébred az álomból, mélységesen kétségbeesett és kiábrándult.</li>
-                    <li><strong>Éva:</strong> Felébred, és új reményt hoz.</li>
-                    <li><strong>Lucifer:</strong> Utolsó kísérleteket tesz Ádám teljes elcsüggesztésére.</li>
-                    <li><strong>Az Úr hangja:</strong> A végső útmutatást adja.</li>
-                </ul>
-                <h5>Központi eszme:</h5>
-                <p>Az emberi lét értelmének végső kérdése. A szabad akarat vs. determinizmus. A küzdelem és a hit szükségessége a teljes tudás hiányában is. Az élet továbbadásának, a jövőnek a fontossága.</p>
-                <h5>Cselekmény és konfliktus (a jegyzeteid alapján is):</h5>
-                <p>Ádám felébredve úgy érzi, az élet hiábavaló, és öngyilkosságra készül, hogy véget vessen az emberiség értelmetlennek tűnő történetének. (A jegyzeteidből: "Ádám ekkor akar öngyilkos lenni (Földtől való elszakadás)" - bár ez inkább az álombeli érzés, a következménye az öngyilkossági szándék.)</p>
-                <p>Lucifer tovább erősíti kétségeit (a jegyzeteidből):</p>
-                <ul>
-                    <li>Felveti a **szabad akarat kérdését**, azzal érvelve, hogy az egyes ember akarata lehet szabad, de az emberiség sorsa ("az egész nem hordja láncait", "az egész emberiség sorsa meghatározott") determinált, és az egyéni küzdelem hiábavaló ("Légy-egyenlőség" hasonlat).</li>
-                    <li>Hangsúlyozza a **morál relativitását** és a **nagy számok törvényét**, ami szerint az egyéni erény vagy bűn jelentéktelen a tömegek mozgásában.</li>
-                </ul>
-                <p>(A jegyzeteidből a felismerés Lucifer szavaira: "Lucifer gúnyolódó szavaira határozottan fogalmazza meg a felismerést: a küzdelem fontosságát, s ezt megfelel az emberi életben." és "Az emberi küzdés végeredménye lehet kétséges, az erkölcsi értékek örökre roskant kétségtelen.")</p>
-                <p>Éva ekkor felébred, és bejelenti, hogy gyermeket vár (a jegyzeteidből: "'Anyának érzem óh Ádám magam'"). Ez az új élet reménye megváltoztatja Ádám szándékát.</p>
-                <p>Ádám végső kérdéseivel az Úrhoz fordul (a jegyzeteidből és a műből):</p>
-                <p class="quote">"Uram... Mondd meg nekem, mi végre termek én? / Végződik-e a földi pálya hát / Nagy cél felé, vagy őrült létre lett / Kárhoztatva körben vissza szállni?... Mi a jutalma a nemes kebelnek... S mi a gonosznak büntetése végre?"</p>
-                <p>(A jegyzeteidből a kérdések lényege: "Van-e élet a halál után? Fog-e fejlődni az emberiség? Megéri-e küzdeni a népért? Ki fogja őt a helyes úton tartani?")</p>
-                <h5>Az Úr válasza és a mű befejezése:</h5>
-                <p>Az Úr nem ad konkrét válaszokat a végső célokra, de hangsúlyozza az ember feladatát:</p>
-                <p class="quote">"Mondottam, ember: küzdj és bízva bízzál!"</p>
-                <p>A mű ezzel a nyitott, de reményt adó felszólítással zárul, amely az emberi küzdelem értelmét magában a küzdelemben és a hitben jelöli meg, még ha a végső célok és a teljes tudás nem is elérhetőek.</p>
+                 <div class="scene-characters"><h5>Főbb szereplők:</h5><p><strong>Ádám:</strong> Kétségbeesett.</p><p><strong>Éva:</strong> Reményt hoz.</p><p><strong>Lucifer:</strong> Kísértő.</p><p><strong>Az Úr hangja.</strong></p></div>
+                <details open><summary>Központi eszme</summary><p>Az emberi lét értelmének végső kérdése. Szabad akarat vs. determinizmus. Küzdelem és hit szükségessége.</p></details>
+                <details><summary>Cselekmény és konfliktus</summary><p>Ádám öngyilkosságra készül. Lucifer érvel ellene. Éva bejelenti várandósságát. Ádám kérdései az Úrhoz.</p>
+                <p class="quote"><strong>Ádám kérdése:</strong> "...mi végre termek én? Végződik-e a földi pálya hát Nagy cél felé...?"</p></details>
+                <details><summary>Az Úr válasza és a mű befejezése</summary><p>Az Úr nem ad konkrét válaszokat, de a küzdelemre és hitre szólít fel.</p>
+                <p class="quote"><strong>Az Úr szava:</strong> "Mondottam, ember: küzdj és bízva bízzál!"</p></details>
             </div>
         </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-     crossorigin=""></script>
     <script>
         let currentView = 'mapView';
         let map;
         let mapInitialized = false;
+        let currentDetailSceneKey = null;
+        const sceneOrder = [
+            'menny', 'paradicsom', 'paradicsomonkivul_elom', 'egyiptom', 'athen', 'roma',
+            'konstantinapoly', 'praga1', 'parizs', 'praga2', 'london', 'falanszter',
+            'ur', 'eszkimo', 'paradicsomonkivul_utan'
+        ];
 
-        const sceneData = { // Adatstruktúra a címekhez és a tartalmakhoz
-            'menny': { title: '1. Szín: A Mennyben' },
-            'paradicsom': { title: '2. Szín: A Paradicsomban' },
-            'paradicsomonkivul_elom': { title: '3. Szín: A Paradicsomon kívül (Álom előtt)' },
-            'egyiptom': { title: '4. Szín: Egyiptom' },
-            'athen': { title: '5. Szín: Athén' },
-            'roma': { title: '6. Szín: Róma' },
-            'konstantinapoly': { title: '7. Szín: Konstantinápoly' },
-            'praga1': { title: '8. Szín: Prága I.' },
-            'parizs': { title: '9. Szín: Párizs' },
-            'praga2': { title: '10. Szín: Prága II.' },
-            'london': { title: '11. Szín: London' },
-            'falanszter': { title: '12. Szín: A Falanszter' },
-            'ur': { title: '13. Szín: Az Űrben' },
-            'eszkimo': { title: '14. Szín: Az eszkimók földjén' },
-            'paradicsomonkivul_utan': { title: '15. Szín: A Paradicsomon kívül (Álom után)' }
-        };
+        const sceneData = {};
 
         const sceneLocations = [
-            // Hozzávetőleges koordináták. A Paradicsom helye szimbolikus.
-            { key: 'paradicsom', name: 'Paradicsom (2. szín)', coords: [31.7683, 35.2137], zoom: 7 }, // Jeruzsálem környéke szimbolikusan
-            { key: 'paradicsomonkivul_elom', name: 'Paradicsomon kívül (3. & 15. szín)', coords: [31.5, 35.0], zoom: 7 }, // Közel a Paradicsomhoz
-            { key: 'egyiptom', name: 'Egyiptom (4. szín)', coords: [26.8206, 30.8025], zoom: 5 }, // Egyiptom közepe
+            { key: 'paradicsom', name: 'Paradicsom (2. szín)', coords: [31.7683, 35.2137], zoom: 7 },
+            { key: 'paradicsomonkivul_elom', name: 'Paradicsomon kívül (3. & 15. szín)', coords: [31.5, 35.0], zoom: 7 },
+            { key: 'egyiptom', name: 'Egyiptom (4. szín)', coords: [26.8206, 30.8025], zoom: 5 },
             { key: 'athen', name: 'Athén (5. szín)', coords: [37.9838, 23.7275], zoom: 6 },
             { key: 'roma', name: 'Róma (6. szín)', coords: [41.9028, 12.4964], zoom: 6 },
             { key: 'konstantinapoly', name: 'Konstantinápoly (7. szín)', coords: [41.0082, 28.9784], zoom: 6 },
-            { key: 'praga1', name: 'Prága (8. & 10. szín)', coords: [50.0755, 14.4378], zoom: 6 }, // Prága I és II ugyanaz a helyszín
+            { key: 'praga1', name: 'Prága (8. & 10. szín)', coords: [50.0755, 14.4378], zoom: 6 },
             { key: 'parizs', name: 'Párizs (9. szín)', coords: [48.8566, 2.3522], zoom: 6 },
             { key: 'london', name: 'London (11. szín)', coords: [51.5074, 0.1278], zoom: 6 },
-            // Falanszter helye absztrakt, lehetne bárhol a jövőben
-            { key: 'falanszter', name: 'Falanszter (12. szín)', coords: [47.0, 19.0], zoom: 4, note: "Helyszín szimbolikus" }, // Magyarország közepe szimbolikusan
-            { key: 'eszkimo', name: 'Eszkimók földje (14. szín)', coords: [75.0, -100.0], zoom: 3 } // Észak-Kanada/Grönland régió
+            { key: 'falanszter', name: 'Falanszter (12. szín)', coords: [47.0, 19.0], zoom: 4, note: "Helyszín szimbolikus" },
+            { key: 'eszkimo', name: 'Eszkimók földje (14. szín)', coords: [75.0, -100.0], zoom: 3 }
         ];
 
-        function initializeMap() {
-            if (!mapInitialized) {
-                map = L.map('interactiveMap').setView([48.0, 15.0], 4); // Európa központú nézet
+        function getSceneDataFromDOM() {
+            const sceneElements = document.querySelectorAll('#sceneStore .scene-content-item');
+            sceneElements.forEach(el => {
+                const key = el.dataset.sceneKey;
+                if (key) {
+                    sceneData[key] = {
+                        title: el.querySelector('h4')?.innerText || "Ismeretlen Szín",
+                        adamRole: el.dataset.adamRole || "N/A",
+                        evaRole: el.dataset.evaRole || "N/A",
+                        luciferRole: el.dataset.luciferRole || "N/A",
+                        mainIdea: el.dataset.mainIdea || "N/A",
+                        locationName: el.dataset.locationName || "N/A",
+                        period: el.dataset.period || "N/A",
+                        fullContentElement: el
+                    };
+                }
+            });
+        }
 
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const button = document.getElementById('darkModeToggle');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            button.textContent = isDarkMode ? '☀️ Világos Mód' : '🌙 Sötét Mód';
+            localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+            if (map && mapInitialized) {
+                setTimeout(() => { map.invalidateSize() }, 50);
+            }
+        }
+        function applyInitialDarkMode() {
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').textContent = '☀️ Világos Mód';
+            }
+        }
+
+        function initializeMap() {
+            if (!mapInitialized && document.getElementById('interactiveMap')) {
+                map = L.map('interactiveMap').setView([48.0, 15.0], 4);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
                     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-                    subdomains: 'abcd',
-                    maxZoom: 19
+                    subdomains: 'abcd', maxZoom: 19
                 }).addTo(map);
 
                 const locationsContainer = document.getElementById('locations');
-                locationsContainer.innerHTML = ''; // Clear previous buttons if any
+                locationsContainer.innerHTML = '';
 
-                // Add markers for scenes with coordinates
                 sceneLocations.forEach(location => {
                     const marker = L.marker(location.coords).addTo(map);
-                    let tooltipText = location.name;
+                    let tooltipText = sceneData[location.key]?.title || location.name;
                     if (location.note) tooltipText += ` (${location.note})`;
                     marker.bindTooltip(tooltipText);
-                    marker.on('click', () => {
-                        showSceneDetails(location.key);
-                    });
+                    marker.on('click', () => { showSceneDetails(location.key); });
                 });
-                 // Add buttons for scenes without map markers
-                Object.keys(sceneData).forEach(key => {
-                    if (!sceneLocations.some(loc => loc.key === key)) {
+
+                sceneOrder.forEach(key => {
+                    if (!sceneLocations.some(loc => loc.key === key) && sceneData[key]) {
                         const button = document.createElement('button');
-                        button.textContent = sceneData[key].title + (sceneData[key].mapNote || " (Nincs térképjelölő)");
+                        button.textContent = sceneData[key].title + " (Nincs térképjelölő)";
                         button.onclick = () => showSceneDetails(key);
                         locationsContainer.appendChild(button);
                     }
                 });
-
                 mapInitialized = true;
+                setTimeout(() => { map.invalidateSize() }, 50);
+            } else if (map) {
+                setTimeout(() => { map.invalidateSize() }, 50);
             }
         }
 
-        function showView(viewId) {
-            document.getElementById('mapView').style.display = 'none';
-            document.getElementById('timelineView').style.display = 'none';
-            document.getElementById('sceneDetailView').style.display = 'none';
-            document.getElementById(viewId).style.display = 'block';
-            currentView = viewId;
+        function populateTimeline() {
+            const timelineList = document.getElementById('timelineList');
+            if (!timelineList) return;
+            timelineList.innerHTML = '';
+            sceneOrder.forEach(key => {
+                if (sceneData[key]) {
+                    const li = document.createElement('li');
+                    li.textContent = sceneData[key].title;
+                    li.onclick = () => showSceneDetails(key);
+                    li.dataset.sceneKey = key;
+                    timelineList.appendChild(li);
+                }
+            });
+        }
 
-            if (viewId === 'mapView') {
-                initializeMap();
-                if (map) {
-                    setTimeout(() => { map.invalidateSize() }, 10); // Kisebb késleltetés
+        function filterTimeline() {
+            const input = document.getElementById('timelineSearchInput');
+            const filter = input.value.toLowerCase();
+            const ul = document.getElementById('timelineList');
+            if (!ul) return;
+            const liItems = ul.getElementsByTagName('li');
+
+            for (let i = 0; i < liItems.length; i++) {
+                const txtValue = liItems[i].textContent || liItems[i].innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    liItems[i].classList.remove('hidden-by-search');
+                } else {
+                    liItems[i].classList.add('hidden-by-search');
                 }
             }
         }
 
+        function showView(viewId) {
+            ['mapView', 'timelineView', 'sceneDetailView', 'flashcardView', 'quizView'].forEach(id => {
+                const view = document.getElementById(id);
+                if (view) view.style.display = 'none';
+            });
+
+            const selectedView = document.getElementById(viewId);
+            if (selectedView) selectedView.style.display = 'block';
+            currentView = viewId;
+
+            if (viewId === 'mapView') {
+                initializeMap();
+            } else if (viewId === 'timelineView') {
+                populateTimeline();
+            } else if (viewId === 'flashcardView') {
+                if (flashcards.length === 0) prepareFlashcards();
+                loadFlashcards();
+            } else if (viewId === 'quizView') {
+                document.getElementById('quizSetupArea').style.display = 'block';
+                document.getElementById('quizQuestionArea').style.display = 'none';
+                document.getElementById('quizResultsArea').style.display = 'none';
+            }
+        }
+
         function showSceneDetails(sceneKey) {
-            const sceneContentHTML = document.getElementById('content-' + sceneKey)?.innerHTML;
+            currentDetailSceneKey = sceneKey;
+            const sceneContentElement = document.getElementById('content-' + sceneKey);
             const sceneTitle = sceneData[sceneKey]?.title || "Ismeretlen Szín";
 
-            if (!sceneContentHTML) {
-                console.error("Nincs tartalom ehhez a színhez:", sceneKey);
-                document.getElementById('sceneTitleDetail').innerText = sceneTitle;
-                document.getElementById('sceneContentDetail').innerHTML = "<p>A tartalom hamarosan elérhető lesz...</p>";
+            document.getElementById('sceneTitleDetail').innerText = sceneTitle;
+            if (!sceneContentElement) {
+                document.getElementById('sceneContentDetail').innerHTML = "<p>A tartalom nem található.</p>";
             } else {
-                document.getElementById('sceneTitleDetail').innerText = sceneTitle;
-                document.getElementById('sceneContentDetail').innerHTML = sceneContentHTML;
+                const clonedContent = sceneContentElement.cloneNode(true);
+                clonedContent.querySelector('h4').style.display = 'none';
+                document.getElementById('sceneContentDetail').innerHTML = '';
+                document.getElementById('sceneContentDetail').appendChild(clonedContent);
             }
 
-            document.getElementById('mapView').style.display = 'none';
-            document.getElementById('timelineView').style.display = 'none';
-            document.getElementById('sceneDetailView').style.display = 'block';
-            window.scrollTo(0, 0); // Scroll to top of detail view
+            const currentIndex = sceneOrder.indexOf(sceneKey);
+            document.getElementById('prevSceneButton').style.display = (currentIndex > 0) ? 'inline-block' : 'none';
+            document.getElementById('nextSceneButton').style.display = (currentIndex < sceneOrder.length - 1) ? 'inline-block' : 'none';
+
+            showView('sceneDetailView');
+            window.scrollTo(0, 0);
+        }
+
+        function navigateToScene(direction) {
+            const currentIndex = sceneOrder.indexOf(currentDetailSceneKey);
+            const newIndex = currentIndex + direction;
+            if (newIndex >= 0 && newIndex < sceneOrder.length) {
+                showSceneDetails(sceneOrder[newIndex]);
+            }
         }
 
         function goBack() {
             document.getElementById('sceneDetailView').style.display = 'none';
-            document.getElementById(currentView).style.display = 'block';
-            if (currentView === 'mapView' && map) {
-                 setTimeout(() => { map.invalidateSize() }, 10);
+            let returnView = 'timelineView';
+            if (currentViewBeforeDetail && currentViewBeforeDetail !== 'sceneDetailView') {
+                returnView = currentViewBeforeDetail;
             }
-             // Stop any ongoing speech synthesis
+            showView(returnView);
+
             if (window.speechSynthesis && window.speechSynthesis.speaking) {
                 window.speechSynthesis.cancel();
             }
-            // Reset audio player
             const audioPlayer = document.getElementById('audioPlayer');
             audioPlayer.src = '';
+            audioPlayer.pause();
+        }
+        let currentViewBeforeDetail = 'timelineView';
+        function showView(viewId) {
+            if (currentView !== 'sceneDetailView' && viewId !== 'sceneDetailView') {
+                currentViewBeforeDetail = currentView;
+            }
+            ['mapView', 'timelineView', 'sceneDetailView', 'flashcardView', 'quizView'].forEach(id => {
+                const view = document.getElementById(id);
+                if (view) view.style.display = 'none';
+            });
 
+            const selectedView = document.getElementById(viewId);
+            if (selectedView) selectedView.style.display = 'block';
+            currentView = viewId;
+
+            if (viewId === 'mapView') {
+                initializeMap();
+            } else if (viewId === 'timelineView') {
+                populateTimeline();
+            } else if (viewId === 'flashcardView') {
+                if (flashcards.length === 0) prepareFlashcards();
+                loadFlashcards();
+            } else if (viewId === 'quizView') {
+                if (!quizInitialized) prepareQuizData();
+                document.getElementById('quizSetupArea').style.display = 'block';
+                document.getElementById('quizQuestionArea').style.display = 'none';
+                document.getElementById('quizResultsArea').style.display = 'none';
+            }
+        }
+
+
+        let flashcards = [];
+        let originalFlashcards = [];
+        let currentFlashcardIndex = 0;
+        let shuffleActive = false;
+        let knownStatusFilter = 'all';
+        let filteredFlashcards = [];
+
+        function prepareFlashcards() {
+            originalFlashcards = sceneOrder.map(key => {
+                const scene = sceneData[key];
+                const sceneContentEl = document.getElementById('content-' + key);
+                let answerHTML = `<h4>${scene.title}</h4>`;
+                if (sceneContentEl) {
+                    const charactersP = sceneContentEl.querySelector('.scene-characters p');
+                    const characters = charactersP ? charactersP.innerText.split(':')[1]?.trim() : scene.characters || "N/A";
+                    const eszmeP = sceneContentEl.querySelector('details[open] > summary:nth-of-type(1) + p');
+                    const eszmeText = eszmeP ? eszmeP.innerText : scene.mainIdea;
+
+                    answerHTML += `<p><strong>Főbb Szereplő (pl.):</strong> ${characters.split(',')[0].substring(0,100)}</p>`;
+                    answerHTML += `<p><strong>Központi Eszme:</strong> ${eszmeText.substring(0, 200)}...</p>`;
+                }
+
+                return {
+                    id: key,
+                    question: `Mi a(z) "${scene.title}" szín főbb jellemzője/kulcsgondolata?`,
+                    answer: answerHTML,
+                    titleForSearch: scene.title.toLowerCase(),
+                    isKnown: false
+                };
+            }).filter(card => card.question && card.answer);
+            flashcards = [...originalFlashcards];
+            applyAllFlashcardFilters();
+        }
+
+        function displayFlashcard() {
+            const flashcardElement = document.querySelector('.flashcard');
+            const questionEl = document.getElementById('flashcardQuestion');
+            const answerEl = document.getElementById('flashcardAnswer');
+            const counterEl = document.getElementById('cardCounter');
+            const noCardsEl = document.getElementById('noFlashcardsFound');
+            const navButtons = document.querySelector('.flashcard-nav');
+            const actionButtons = document.querySelector('.flashcard-actions');
+
+
+            if (filteredFlashcards.length === 0) {
+                questionEl.textContent = "Nincs megjeleníthető kártya.";
+                answerEl.innerHTML = "";
+                counterEl.textContent = "0 / 0";
+                if (flashcardElement) flashcardElement.style.display = 'none';
+                if (navButtons) navButtons.style.display = 'none';
+                if (actionButtons) actionButtons.style.display = 'none';
+                if (noCardsEl) noCardsEl.style.display = 'block';
+                return;
+            }
+
+            if (flashcardElement) flashcardElement.style.display = 'block';
+            if (navButtons) navButtons.style.display = 'flex';
+            if (actionButtons) actionButtons.style.display = 'flex';
+            if (noCardsEl) noCardsEl.style.display = 'none';
+
+
+            const card = filteredFlashcards[currentFlashcardIndex];
+            questionEl.textContent = card.question;
+            answerEl.innerHTML = card.answer;
+            counterEl.textContent = `${currentFlashcardIndex + 1} / ${filteredFlashcards.length}`;
+
+            flashcardElement.classList.remove('is-flipped', 'known', 'unknown');
+            if (card.isKnown) {
+                flashcardElement.classList.add('known');
+            } else {
+                flashcardElement.classList.add('unknown');
+            }
+        }
+
+        function flipCurrentCard() {
+            if (filteredFlashcards.length > 0) {
+                document.querySelector('.flashcard').classList.toggle('is-flipped');
+            }
+        }
+
+        function nextFlashcard() {
+            if (filteredFlashcards.length > 0) {
+                currentFlashcardIndex = (currentFlashcardIndex + 1) % filteredFlashcards.length;
+                displayFlashcard();
+            }
+        }
+
+        function prevFlashcard() {
+            if (filteredFlashcards.length > 0) {
+                currentFlashcardIndex = (currentFlashcardIndex - 1 + filteredFlashcards.length) % filteredFlashcards.length;
+                displayFlashcard();
+            }
+        }
+
+        function markFlashcard(known) {
+            if (filteredFlashcards.length > 0) {
+                const cardInOriginalArray = originalFlashcards.find(c => c.id === filteredFlashcards[currentFlashcardIndex].id);
+                if (cardInOriginalArray) cardInOriginalArray.isKnown = known;
+                filteredFlashcards[currentFlashcardIndex].isKnown = known;
+                displayFlashcard();
+                if (knownStatusFilter !== 'all') {
+                    setTimeout(() => {
+                        applyAllFlashcardFilters();
+                        if(currentFlashcardIndex >= filteredFlashcards.length && filteredFlashcards.length > 0) {
+                            currentFlashcardIndex = filteredFlashcards.length -1;
+                        }
+                        displayFlashcard();
+                    }, 300);
+                }
+            }
+        }
+
+        function toggleShuffleAndReloadFlashcards() {
+            shuffleActive = document.getElementById('shuffleFlashcards').checked;
+            loadFlashcards();
+        }
+
+        function filterFlashcardsByKnownStatus() {
+            knownStatusFilter = document.getElementById('filterKnownFlashcards').value;
+            applyAllFlashcardFilters();
+        }
+
+        function filterFlashcards() {
+            applyAllFlashcardFilters();
+        }
+
+        function applyAllFlashcardFilters() {
+            const searchInput = document.getElementById('flashcardSearchInput');
+            const filterText = searchInput ? searchInput.value.toLowerCase() : "";
+
+            let tempFiltered = shuffleActive ? [...flashcards].sort(() => Math.random() - 0.5) : [...flashcards];
+
+            if (filterText) {
+                tempFiltered = tempFiltered.filter(card => card.titleForSearch.includes(filterText));
+            }
+
+            if (knownStatusFilter === 'known') {
+                tempFiltered = tempFiltered.filter(card => card.isKnown);
+            } else if (knownStatusFilter === 'unknown') {
+                tempFiltered = tempFiltered.filter(card => !card.isKnown);
+            }
+            filteredFlashcards = tempFiltered;
+            currentFlashcardIndex = 0;
+            displayFlashcard();
+        }
+
+        function loadFlashcards() {
+            if (shuffleActive) {
+                flashcards = [...originalFlashcards];
+                shuffleArray(flashcards);
+            } else {
+                flashcards = [...originalFlashcards];
+            }
+            applyAllFlashcardFilters();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        let quizQuestions = [];
+        let currentQuizQuestionIndex = 0;
+        let quizScore = 0;
+        let quizActive = false;
+        let quizInitialized = false;
+        let selectedMatchItems = { a: null, b: null };
+
+
+        function prepareQuizData() {
+            if(quizInitialized) return;
+            quizInitialized = true;
+        }
+
+        function generateQuizQuestions(numQuestions, questionType) {
+            let availableQuestions = [];
+            const allSceneKeys = Object.keys(sceneData);
+
+            if (questionType === 'all' || questionType === 'mcq_roles') {
+                allSceneKeys.forEach(key => {
+                    ['adamRole', 'evaRole', 'luciferRole'].forEach(roleType => {
+                        if (sceneData[key][roleType] && sceneData[key][roleType] !== "N/A") {
+                            const correctAnswer = sceneData[key][roleType];
+                            const distractors = [];
+                            while (distractors.length < 3) {
+                                const randomKey = allSceneKeys[Math.floor(Math.random() * allSceneKeys.length)];
+                                const randomRole = sceneData[randomKey][roleType];
+                                if (randomRole && randomRole !== "N/A" && randomRole !== correctAnswer && !distractors.includes(randomRole)) {
+                                    distractors.push(randomRole);
+                                }
+                            }
+                            let charName = "";
+                            if(roleType === 'adamRole') charName = "Ádám";
+                            else if(roleType === 'evaRole') charName = "Éva";
+                            else if(roleType === 'luciferRole') charName = "Lucifer";
+
+                            availableQuestions.push({
+                                type: 'mcq',
+                                question: `Ki/Mi volt ${charName} szerepe a(z) "${sceneData[key].title}" színben?`,
+                                options: shuffleArray([correctAnswer, ...distractors]),
+                                correctAnswer: correctAnswer
+                            });
+                        }
+                    });
+                });
+            }
+
+            if (questionType === 'all' || questionType === 'mcq_ideas') {
+                allSceneKeys.forEach(key => {
+                    if (sceneData[key].mainIdea && sceneData[key].mainIdea !== "N/A") {
+                        const correctAnswer = sceneData[key].mainIdea;
+                        const distractors = [];
+                        while (distractors.length < 3) {
+                            const randomKey = allSceneKeys[Math.floor(Math.random() * allSceneKeys.length)];
+                            if (randomKey !== key && sceneData[randomKey].mainIdea && sceneData[randomKey].mainIdea !== "N/A" && !distractors.includes(sceneData[randomKey].mainIdea)) {
+                                distractors.push(sceneData[randomKey].mainIdea);
+                            }
+                            if (distractors.length < 3 && !distractors.includes("A semmiről nem szólt.")) distractors.push("A semmiről nem szólt.");
+                        }
+                        availableQuestions.push({
+                            type: 'mcq',
+                            question: `Mi volt a központi eszme/téma a(z) "${sceneData[key].title}" színben?`,
+                            options: shuffleArray([correctAnswer, ...distractors]),
+                            correctAnswer: correctAnswer
+                        });
+                    }
+                });
+            }
+            if (questionType === 'all' || questionType === 'match_scene_role') {
+                const itemsToMatch = 4;
+                let availablePairs = allSceneKeys.map(key => ({ scene: sceneData[key].title, role: sceneData[key].adamRole }))
+                                            .filter(p => p.role && p.role !== "N/A");
+                if (availablePairs.length >= itemsToMatch) {
+                    shuffleArray(availablePairs);
+                    const selectedPairs = availablePairs.slice(0, itemsToMatch);
+                    availableQuestions.push({
+                        type: 'match',
+                        question: "Párosítsd a színeket Ádám ottani szerepével:",
+                        columnA_header: "Szín",
+                        columnB_header: "Ádám Szerepe",
+                        pairs: selectedPairs.map(p => ({ itemA: p.scene, itemB: p.role }))
+                    });
+                }
+            }
+            if (questionType === 'all' || questionType === 'match_scene_idea') {
+                const itemsToMatch = 4;
+                let availablePairs = allSceneKeys.map(key => ({ scene: sceneData[key].title, idea: sceneData[key].mainIdea }))
+                                            .filter(p => p.idea && p.idea !== "N/A");
+                if (availablePairs.length >= itemsToMatch) {
+                    shuffleArray(availablePairs);
+                    const selectedPairs = availablePairs.slice(0, itemsToMatch);
+                    availableQuestions.push({
+                        type: 'match',
+                        question: "Párosítsd a színeket a központi eszméjükkel:",
+                        columnA_header: "Szín",
+                        columnB_header: "Központi Eszme",
+                        pairs: selectedPairs.map(p => ({ itemA: p.scene, itemB: p.idea }))
+                    });
+                }
+            }
+
+
+            shuffleArray(availableQuestions);
+            quizQuestions = numQuestions === 'all' ? availableQuestions : availableQuestions.slice(0, parseInt(numQuestions));
+        }
+
+
+        function startQuiz() {
+            const numQuestions = document.getElementById('quizNumQuestions').value;
+            const questionType = document.getElementById('quizQuestionType').value;
+
+            if (!quizInitialized) prepareQuizData();
+            generateQuizQuestions(numQuestions, questionType);
+
+            if (quizQuestions.length === 0) {
+                alert("Nem sikerült elegendő kérdést generálni a kiválasztott típushoz. Próbálj más beállításokat!");
+                return;
+            }
+
+            currentQuizQuestionIndex = 0;
+            quizScore = 0;
+            quizActive = true;
+            document.getElementById('quizSetupArea').style.display = 'none';
+            document.getElementById('quizResultsArea').style.display = 'none';
+            document.getElementById('quizQuestionArea').style.display = 'block';
+            displayQuizQuestion();
+            updateQuizProgress();
+        }
+
+        function displayQuizQuestion() {
+            if (currentQuizQuestionIndex >= quizQuestions.length) {
+                showQuizResults();
+                return;
+            }
+            const q = quizQuestions[currentQuizQuestionIndex];
+            document.getElementById('questionText').innerHTML = q.question;
+            document.getElementById('feedbackText').textContent = '';
+            document.getElementById('nextQuestionButton').style.display = 'none';
+            document.getElementById('checkAnswerButton').style.display = q.type === 'mcq' ? 'inline-block' : 'none';
+            document.getElementById('matchSubmitButton').style.display = q.type === 'match' ? 'inline-block' : 'none';
+
+
+            const mcqOptionsDiv = document.getElementById('mcqOptions');
+            const matchingOptionsDiv = document.getElementById('matchingOptions');
+            mcqOptionsDiv.innerHTML = '';
+            matchingOptionsDiv.style.display = 'none';
+            document.getElementById('matchingColumnA').innerHTML = '';
+            document.getElementById('matchingColumnB').innerHTML = '';
+
+
+            if (q.type === 'mcq') {
+                mcqOptionsDiv.style.display = 'grid';
+                q.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.innerHTML = option;
+                    button.onclick = () => selectMCQOption(button, option);
+                    const wrapper = document.createElement('div');
+                    wrapper.classList.add('quiz-option');
+                    wrapper.appendChild(button);
+                    mcqOptionsDiv.appendChild(wrapper);
+                });
+            } else if (q.type === 'match') {
+                matchingOptionsDiv.style.display = 'block';
+                const colA = document.getElementById('matchingColumnA');
+                const colB = document.getElementById('matchingColumnB');
+                colA.innerHTML = `<h5>${q.columnA_header || 'A oszlop'}</h5>`;
+                colB.innerHTML = `<h5>${q.columnB_header || 'B oszlop'}</h5>`;
+
+                const shuffledB = shuffleArray([...q.pairs.map(p => p.itemB)]);
+
+                q.pairs.forEach((pair, index) => {
+                    const liA = document.createElement('li');
+                    liA.innerHTML = pair.itemA;
+                    liA.dataset.matchId = pair.itemA;
+                    liA.dataset.pairIndex = index;
+                    liA.onclick = () => selectMatchItem(liA, 'a');
+                    colA.appendChild(liA);
+
+                    const liB = document.createElement('li');
+                    liB.innerHTML = shuffledB[index];
+                    liB.dataset.matchId = shuffledB[index];
+                    liB.onclick = () => selectMatchItem(liB, 'b');
+                    colB.appendChild(liB);
+                });
+                selectedMatchItems = { a: null, b: null };
+            }
+            updateQuizProgress();
+        }
+
+        let selectedMCQButton = null;
+        function selectMCQOption(button, option) {
+            if (!quizActive) return;
+            if (selectedMCQButton) {
+                selectedMCQButton.classList.remove('selected');
+            }
+            button.classList.add('selected');
+            selectedMCQButton = button;
+        }
+
+
+        function checkAnswer() {
+            if (!selectedMCQButton || !quizActive) {
+                document.getElementById('feedbackText').textContent = "Kérlek, válassz egy opciót!";
+                return;
+            }
+            quizActive = false;
+            const q = quizQuestions[currentQuizQuestionIndex];
+            const selectedAnswer = selectedMCQButton.innerHTML;
+
+            document.querySelectorAll('#mcqOptions .quiz-option button').forEach(btn => {
+                btn.disabled = true;
+                if (btn.innerHTML === q.correctAnswer) {
+                    btn.classList.add('correct');
+                }
+            });
+
+            if (selectedAnswer === q.correctAnswer) {
+                document.getElementById('feedbackText').textContent = "Helyes válasz!";
+                document.getElementById('feedbackText').style.color = 'var(--quiz-correct-text)';
+                selectedMCQButton.classList.add('correct');
+                quizScore++;
+            } else {
+                document.getElementById('feedbackText').textContent = `Helytelen. A jó válasz: ${q.correctAnswer}`;
+                document.getElementById('feedbackText').style.color = 'var(--quiz-incorrect-text)';
+                selectedMCQButton.classList.add('incorrect');
+            }
+            document.getElementById('nextQuestionButton').style.display = 'inline-block';
+            document.getElementById('checkAnswerButton').style.display = 'none';
+            updateQuizScore();
+        }
+
+        function selectMatchItem(liElement, column) {
+            if (!quizActive) return;
+            const previouslySelected = document.querySelector(`.matching-column li.selected-match-item-${column}`);
+            if (previouslySelected) {
+                previouslySelected.classList.remove(`selected-match-item-${column}`);
+            }
+            liElement.classList.add(`selected-match-item-${column}`);
+            selectedMatchItems[column] = liElement;
+        }
+
+        function submitMatchAnswer() {
+            if (!selectedMatchItems.a || !selectedMatchItems.b || !quizActive) {
+                document.getElementById('feedbackText').textContent = "Kérlek, válassz egy-egy elemet mindkét oszlopból!";
+                return;
+            }
+            quizActive = false;
+            const q = quizQuestions[currentQuizQuestionIndex];
+            const itemA_value = selectedMatchItems.a.dataset.matchId;
+            const itemB_value = selectedMatchItems.b.dataset.matchId;
+
+            const correctPair = q.pairs.find(p => p.itemA === itemA_value);
+
+            if (correctPair && correctPair.itemB === itemB_value) {
+                document.getElementById('feedbackText').textContent = "Helyes párosítás!";
+                document.getElementById('feedbackText').style.color = 'var(--quiz-correct-text)';
+                selectedMatchItems.a.classList.add('correct-match');
+                selectedMatchItems.b.classList.add('correct-match');
+                quizScore++;
+            } else {
+                document.getElementById('feedbackText').textContent = `Helytelen. "${itemA_value}" helyes párja: "${correctPair ? correctPair.itemB : 'N/A'}" lett volna.`;
+                document.getElementById('feedbackText').style.color = 'var(--quiz-incorrect-text)';
+                selectedMatchItems.a.classList.add('incorrect-match');
+                selectedMatchItems.b.classList.add('incorrect-match');
+            }
+
+            document.querySelectorAll('.matching-column li').forEach(li => li.onclick = null);
+            document.getElementById('nextQuestionButton').style.display = 'inline-block';
+            document.getElementById('matchSubmitButton').style.display = 'none';
+            updateQuizScore();
+        }
+
+
+        function nextQuizQuestion() {
+            currentQuizQuestionIndex++;
+            quizActive = true;
+            selectedMCQButton = null;
+            if (currentQuizQuestionIndex < quizQuestions.length) {
+                displayQuizQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+
+        function showQuizResults() {
+            document.getElementById('quizQuestionArea').style.display = 'none';
+            document.getElementById('quizResultsArea').style.display = 'block';
+            const percentage = quizQuestions.length > 0 ? Math.round((quizScore / quizQuestions.length) * 100) : 0;
+            document.getElementById('finalScoreText').textContent = `Pontszámod: ${quizScore} / ${quizQuestions.length}`;
+            document.getElementById('finalPercentageText').textContent = `Százalék: ${percentage}%`;
+        }
+
+        function restartQuizSetup() {
+            document.getElementById('quizResultsArea').style.display = 'none';
+            document.getElementById('quizSetupArea').style.display = 'block';
+            document.getElementById('quizProgress').textContent = '';
+            document.getElementById('quizScore').textContent = '';
+        }
+
+        function updateQuizProgress() {
+            document.getElementById('quizProgress').textContent = `Kérdés: ${currentQuizQuestionIndex + 1} / ${quizQuestions.length}`;
+        }
+        function updateQuizScore(){
+            document.getElementById('quizScore').textContent = `Pontszám: ${quizScore}`;
         }
 
         function speakSceneContent() {
-            // This function will call your backend
             const contentDiv = document.getElementById('sceneContentDetail');
             if (!contentDiv) return;
-
-            // Extract relevant text, try to make it more speakable
-            let textToSpeak = "";
-            textToSpeak += (document.getElementById('sceneTitleDetail')?.innerText || "") + ". ";
-
-            contentDiv.querySelectorAll('h5, p, li, .quote').forEach(el => {
-                let text = el.innerText || el.textContent;
-                // Simple cleanup
-                text = text.replace(/(\r\n|\n|\r)/gm, " ").replace(/\s+/g, ' ').trim();
-                if (el.tagName === 'H5') text = el.innerText + ": ";
-                textToSpeak += text + ". ";
+            let textToSpeak = (document.getElementById('sceneTitleDetail')?.innerText || "") + ". ";
+            contentDiv.querySelectorAll('h5, p, li, .quote, summary').forEach(el => {
+                if (el.offsetParent !== null) {
+                    let text = el.innerText || el.textContent;
+                    text = text.replace(/(\r\n|\n|\r)/gm, " ").replace(/\s+/g, ' ').trim();
+                    if (el.tagName === 'H5' || el.tagName === 'SUMMARY') text = el.innerText + ": ";
+                    textToSpeak += text + ". ";
+                }
             });
-
-            console.log("Elküldendő szöveg a backendnek:", textToSpeak);
-            alert("Ez a funkció egy backend szervert igényel a Google Cloud TTS API hívásához. A szöveg a konzolon látható.");
-
-            // === proba backend call ===
-            // const backendUrl = 'http://localhost:3000/synthesize-speech'; // A te backend URL-ed
-            // fetch(backendUrl, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({ text: textToSpeak, lang: 'hu-HU' }) // Küldhetnél nyelvi kódot is
-            // })
-            // .then(response => {
-            //     if (!response.ok) {
-            //         throw new Error(`Network response was not ok: ${response.statusText}`);
-            //     }
-            //     return response.blob(); // Vagy response.json() ha a backend base64 kódolt audiót küld
-            // })
-            // .then(audioBlob => {
-            //     const audioUrl = URL.createObjectURL(audioBlob);
-            //     const audioPlayer = document.getElementById('audioPlayer');
-            //     audioPlayer.src = audioUrl;
-            //     audioPlayer.play();
-            // })
-            // .catch(error => {
-            //     console.error('Hiba történt a TTS API hívása során:', error);
-            //     alert('Hiba történt a felolvasás közben. Nézd meg a konzolt.');
-            // });
+            console.log("Elküldendő szöveg a backendnek (első 500 karakter):", textToSpeak.substring(0, 500) + "...");
+            alert("Ez a funkció egy backend szervert igényel a Google Cloud TTS API hívásához. A szöveg (első 500 karakter) a konzolon látható.");
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            applyInitialDarkMode();
+            getSceneDataFromDOM();
+            populateTimeline();
+            prepareFlashcards();
+            prepareQuizData();
             showView('mapView');
         });
     </script>
